@@ -1,0 +1,35 @@
+name: Push to Gitea
+
+on:
+  push:
+    branches:
+      - master
+      - staging
+      - develop
+      - feature/ci-setup
+jobs:
+  push_to_gitea:
+    name: Push Code to Gitea
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the GitHub repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+      # Set up Git and push to Gitea
+      - name: Push to Gitea
+
+        run: |
+          BRANCH_NAME=${{ github.ref_name }}
+          echo "Current github branch $BRANCH_NAME"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GITEA_DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          git config --global core.sshCommand 'ssh -i ~/.ssh/id_rsa -o IdentitiesOnly=yes -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
+          git config --global user.name "gitea"
+          git config --global user.email "gitea[bot]@users.noreply.gitea.com"
+          git remote add gitea "${{ vars.GITEA_REPO }}"
+          git remote -v
+          git fetch --unshallow
+          git checkout $BRANCH_NAME
+          git push gitea ${{ github.ref_name }}
