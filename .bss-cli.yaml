@@ -1,0 +1,6 @@
+file_size:
+  name: File Size
+  limit: 10485760
+theme_check:
+  name: Theme Check
+  config: .theme-check.yml
