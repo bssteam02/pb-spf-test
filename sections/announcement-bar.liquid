@@ -1,0 +1,37 @@
+<div class="announcement-bar">
+  <p class="announcement-bar__text">{{ section.settings.text }}</p>
+</div>
+
+{% stylesheet %}
+  .announcement-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.5rem var(--page-margin);
+    background-color: var(--color-foreground);
+  }
+  .announcement-bar__text {
+    margin: 0;
+    font-family: var(--font-primary--family);
+    font-style: var(--font-primary--style);
+    font-weight: var(--font-primary--weight);
+    font-size: 0.875rem;
+    text-align: center;
+    color: var(--color-background);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.announcement_bar",
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "t:labels.text",
+      "default": "Free shipping on every order · 30-day returns"
+    }
+  ]
+}
+{% endschema %}
