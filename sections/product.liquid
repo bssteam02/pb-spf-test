@@ -11,9 +11,11 @@
   {% endfor %}
 </div>
 
+{% assign current_variant = product.selected_or_first_available_variant %}
 <div class="product-info">
   <h1>{{ product.title }}</h1>
   <p>{{ product.price | money }}</p>
+  <p id="ProductVariantStatus-{{ section.id }}">{% if current_variant.sku != blank %}{{ current_variant.sku }} - {% endif %}{% if current_variant.available %}In stock{% else %}Sold out{% endif %}</p>
   <p>{{ product.description }}</p>
 </div>
 
@@ -40,6 +42,23 @@
     {{ form | payment_button }}
   {% endform %}
 </div>
+
+<script>
+  (function () {
+    var variants = {{ product.variants | json }};
+    var select = document.querySelector('.product-form select[name="id"]');
+    var status = document.getElementById('ProductVariantStatus-{{ section.id }}');
+    if (!select || !status) return;
+
+    select.addEventListener('change', function () {
+      var variant = variants.find(function (v) {
+        return v.id === parseInt(select.value, 10);
+      });
+      if (!variant) return;
+      status.textContent = (variant.sku ? variant.sku + ' - ' : '') + (variant.available ? 'In stock' : 'Sold out');
+    });
+  })();
+</script>
 
 {% schema %}
 {
