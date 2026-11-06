@@ -6,8 +6,9 @@ library identifier: 'library@master', retriever: modernSCM([
 node {
 	env.PROJECT_NAME = 'pb-spf-test'
 	env.DOCKER_IMAGE = 'rogerdz/shopify:node-24'
-
-	def steps = shopifySteps()
+        env.CUSTOM_WEBHOOK_VALIDATE_ENDPOINT = 'https://app-dev.nomgraph.com/api/coding/cicd/validation-result'
+	
+        def steps = shopifySteps()
 	runPipeline(steps)
 }
 
