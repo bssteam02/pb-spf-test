@@ -26,12 +26,23 @@
     {% endfor %}
   </table>
 
+  {% if cart.item_count > 0 and section.settings.shipping_note != blank %}
+    <p class="cart-shipping-note"><small style="opacity: 0.7;">{{ section.settings.shipping_note | escape }}</small></p>
+  {% endif %}
+
   <input type="submit" name="checkout" value="{{ 'cart.checkout' | t }}">
 </form>
 
 {% schema %}
 {
   "name": "t:general.cart",
-  "settings": []
+  "settings": [
+    {
+      "type": "text",
+      "id": "shipping_note",
+      "label": "t:labels.shipping_note",
+      "default": "US orders: $8 standard shipping, or free on orders over $100 with code FREESHIPPING2026 until 31 December 2026."
+    }
+  ]
 }
 {% endschema %}
