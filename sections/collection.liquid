@@ -7,8 +7,8 @@
 
 <h1>{{ collection.title }}</h1>
 
-<div class="collection-products">
-  {% paginate collection.products by 20 %}
+{% paginate collection.products by 20 %}
+  <div class="collection-products">
     {% for product in collection.products %}
       <div class="collection-product">
         {% if product.featured_image %}
@@ -27,15 +27,32 @@
         </div>
       </div>
     {% endfor %}
+  </div>
 
-    {{ paginate | default_pagination }}
-  {% endpaginate %}
-</div>
+  {{ paginate | default_pagination }}
+{% endpaginate %}
 
 {% stylesheet %}
   .collection-products {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .collection-product {
+    min-width: 0;
+  }
+
+  @media (min-width: 768px) {
+    .collection-products {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .collection-products {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
   }
 {% endstylesheet %}
 
