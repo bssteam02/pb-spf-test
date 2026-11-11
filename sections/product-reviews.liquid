@@ -1,0 +1,27 @@
+{% comment %}
+  Holds app blocks (for example a product reviews widget) below the main
+  product section. Renders nothing until an app block is added.
+{% endcomment %}
+
+{% if section.blocks.size > 0 %}
+  <div class="app-blocks app-blocks--reviews">
+    {% for block in section.blocks %}
+      {% render block %}
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "t:general.product_reviews",
+  "settings": [],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["product"]
+  }
+}
+{% endschema %}

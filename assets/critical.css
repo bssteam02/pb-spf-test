@@ -115,3 +115,29 @@ body {
 .shopify-section > .full-width {
   grid-column: 1 / -1;
 }
+
+/** App blocks (e.g. review stars and widgets) follow the theme's font and colour settings */
+.app-blocks {
+  font-family: var(--font-primary--family);
+  font-style: var(--font-primary--style);
+  font-weight: var(--font-primary--weight);
+  color: var(--color-foreground);
+  background-color: var(--color-background);
+
+  /* Judge.me reads these variables for its stars and accents */
+  --jdgm-primary-color: var(--color-foreground);
+  --jdgm-star-color: var(--color-foreground);
+}
+
+.app-blocks--reviews {
+  margin-block: 2rem;
+}
+
+/* Icon-font stars keep their own font-family so the glyphs still render */
+.app-blocks :where(div, p, span, a, button, input, textarea, label, h1, h2, h3, h4, h5, h6):not([class*='jdgm-star']) {
+  font-family: inherit;
+}
+
+.app-blocks [class*='jdgm-star'] {
+  color: var(--color-foreground);
+}

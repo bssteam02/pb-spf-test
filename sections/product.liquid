@@ -13,6 +13,13 @@
 
 <div class="product-info">
   <h1>{{ product.title }}</h1>
+  {% if section.blocks.size > 0 %}
+    <div class="app-blocks">
+      {% for block in section.blocks %}
+        {% render block %}
+      {% endfor %}
+    </div>
+  {% endif %}
   <p>{{ product.price | money }}</p>
   <p>{{ product.description }}</p>
 </div>
@@ -45,6 +52,11 @@
 {
   "name": "t:general.product",
   "settings": [],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
   "disabled_on": {
     "groups": ["header", "footer"]
   }
