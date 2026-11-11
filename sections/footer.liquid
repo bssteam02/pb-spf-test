@@ -21,17 +21,35 @@
 {% stylesheet %}
   footer {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
+    gap: 1rem;
     margin-top: 2rem;
+    max-width: 100%;
   }
   footer a {
     text-decoration: none;
     color: var(--color-foreground);
   }
+  footer .footer__copyright {
+    min-width: min(100%, 16rem);
+    overflow-wrap: anywhere;
+  }
   footer .footer__links,
   footer .footer__payment {
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
+    min-width: 0;
+    max-width: 100%;
+  }
+  @media (max-width: 749px) {
+    footer {
+      flex-direction: column;
+    }
+    footer .footer__copyright {
+      width: 100%;
+    }
   }
 {% endstylesheet %}
 
