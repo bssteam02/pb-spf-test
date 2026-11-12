@@ -15,7 +15,7 @@
 <div class="product-info">
   <h1>{{ product.title }}</h1>
   <p>{{ product.price | money }}</p>
-  <p id="ProductVariantStatus-{{ section.id }}">{% if current_variant.sku != blank %}{{ current_variant.sku }} - {% endif %}{% if current_variant.available %}In stock{% else %}Sold out{% endif %}</p>
+  <p id="ProductVariantStatus-{{ section.id }}">{% if current_variant.sku != blank %}{{ current_variant.sku }} - {% endif %}{% if current_variant.available %}In stock{% else %}Out of stock – back soon{% endif %}</p>
   <p>{{ product.description }}</p>
 </div>
 
@@ -55,7 +55,7 @@
         return v.id === parseInt(select.value, 10);
       });
       if (!variant) return;
-      status.textContent = (variant.sku ? variant.sku + ' - ' : '') + (variant.available ? 'In stock' : 'Sold out');
+      status.textContent = (variant.sku ? variant.sku + ' - ' : '') + (variant.available ? 'In stock' : 'Out of stock – back soon');
     });
   })();
 </script>
