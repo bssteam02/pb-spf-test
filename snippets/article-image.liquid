@@ -1,0 +1,30 @@
+{% doc %}
+  Renders an article's featured image with a responsive srcset and a sizes
+  attribute that mirrors the content column width (see `.shopify-section` in
+  critical.css): min(page width - 2 * page margin, 100vw - 2 * page margin).
+
+  @param {image} image - The article's featured image
+  @param {string} [loading] - 'lazy' (default) or 'eager'
+  @param {string} [fetchpriority] - Optional fetchpriority, e.g. 'high'
+
+  @example
+  {% render 'article-image', image: article.image, loading: 'eager', fetchpriority: 'high' %}
+{% enddoc %}
+
+{% liquid
+  assign page_width_px = settings.max_page_width | remove: 'rem' | times: 16
+  assign margin_total_px = settings.min_page_margin | times: 2
+  assign content_max_px = page_width_px | minus: margin_total_px
+  assign sizes = '(min-width: ' | append: page_width_px | append: 'px) ' | append: content_max_px | append: 'px, calc(100vw - ' | append: margin_total_px | append: 'px)'
+  assign image_loading = loading | default: 'lazy'
+%}
+
+{{
+  image
+  | image_url: width: 1600
+  | image_tag:
+    widths: '360, 540, 720, 900, 1080, 1200, 1400, 1600',
+    sizes: sizes,
+    loading: image_loading,
+    fetchpriority: fetchpriority
+}}

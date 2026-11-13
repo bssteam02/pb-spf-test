@@ -11,7 +11,13 @@
   {% for article in blog.articles %}
     <div>
       {% if article.image %}
-        {{ article.image | image_url: width: 1000 | image_tag }}
+        {%- liquid
+          assign image_loading = 'lazy'
+          if forloop.first
+            assign image_loading = 'eager'
+          endif
+        -%}
+        {% render 'article-image', image: article.image, loading: image_loading %}
       {% endif %}
       <h2>
         {{ article.title | link_to: article.url }}
