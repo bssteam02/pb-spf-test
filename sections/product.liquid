@@ -13,6 +13,7 @@
 
 <div class="product-info">
   <h1>{{ product.title }}</h1>
+  {% render 'product-labels', product: product %}
   <p>{{ product.price | money }}</p>
   <p>{{ product.description }}</p>
 </div>
