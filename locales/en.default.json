@@ -30,6 +30,10 @@
   "collections": {
     "title": "Collections"
   },
+  "footer": {
+    "copyright_html": "&copy; {{ year }} {{ name }} &middot; All rights reserved.",
+    "privacy_policy": "Privacy policy"
+  },
   "gift_card": {
     "add_to_apple_wallet": "Add to Apple Wallet",
     "card": "Gift card",
