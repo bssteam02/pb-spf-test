@@ -1,0 +1,139 @@
+{% comment %}
+  Section for the "Your Privacy Choices" page (handle: data-sharing-opt-out).
+  The page body is generated and managed by Shopify, and its script builds the
+  opt-out form inside #pc--optOutFormContainer. This section only wraps and
+  styles that body; it never changes the content or the form's behaviour.
+{% endcomment %}
+
+<div class="privacy-choices">
+  <h1 class="privacy-choices__title">{{ page.title }}</h1>
+
+  <div class="privacy-choices__body">
+    {{ page.content }}
+  </div>
+</div>
+
+{% stylesheet %}
+  .privacy-choices {
+    --privacy-choices-gap: 1.25rem;
+    --privacy-choices-border: color-mix(in srgb, var(--color-foreground) 35%, transparent);
+
+    max-width: 48rem;
+    padding-block: 3rem;
+    font-family: var(--font-primary--family);
+    font-style: var(--font-primary--style);
+    font-weight: var(--font-primary--weight);
+    line-height: 1.6;
+    color: var(--color-foreground);
+  }
+
+  .privacy-choices__title {
+    margin-block-end: var(--privacy-choices-gap);
+    line-height: 1.2;
+  }
+
+  .privacy-choices__body > * + * {
+    margin-block-start: var(--privacy-choices-gap);
+  }
+
+  .privacy-choices__body :is(p, li, label, span, div, h2, h3, h4) {
+    font-family: inherit;
+    color: inherit;
+  }
+
+  .privacy-choices__body a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  .privacy-choices__body a:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  .privacy-choices #pc--optOutFormContainer {
+    color: var(--color-foreground);
+    font-family: inherit;
+    font-size: 1rem;
+  }
+
+  .privacy-choices #pc--optOutFormContainer :is(form, fieldset) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .privacy-choices #pc--optOutFormContainer :is(p, label, span, div) {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+  }
+
+  .privacy-choices #pc--optOutFormContainer label {
+    display: block;
+    font-weight: 600;
+  }
+
+  .privacy-choices #pc--optOutFormContainer input:is([type='email'], [type='text']) {
+    width: 100%;
+    max-width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--privacy-choices-border);
+    border-radius: var(--style-border-radius-inputs);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font: inherit;
+    line-height: 1.4;
+  }
+
+  .privacy-choices #pc--optOutFormContainer input:is([type='email'], [type='text'])::placeholder {
+    color: color-mix(in srgb, var(--color-foreground) 60%, transparent);
+  }
+
+  .privacy-choices #pc--optOutFormContainer input[type='checkbox'] {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0.2rem 0.6rem 0 0;
+    accent-color: var(--color-foreground);
+  }
+
+  .privacy-choices #pc--optOutFormContainer :is(button, input[type='submit']) {
+    width: auto;
+    padding: 0.75rem 1.75rem;
+    border: 1px solid var(--color-foreground);
+    border-radius: var(--style-border-radius-inputs);
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+    font: inherit;
+    font-weight: 600;
+    line-height: 1.4;
+    cursor: pointer;
+  }
+
+  .privacy-choices #pc--optOutFormContainer :is(button, input[type='submit']):hover {
+    background-color: color-mix(in srgb, var(--color-foreground) 85%, var(--color-background));
+  }
+
+  .privacy-choices #pc--optOutFormContainer :is(button, input, a):focus-visible {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: 2px;
+  }
+
+  .privacy-choices #pc--optOutFormContainer :is(button, input[type='submit']):disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Privacy choices page",
+  "settings": []
+}
+{% endschema %}
