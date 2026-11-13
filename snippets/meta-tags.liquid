@@ -72,6 +72,23 @@
   >
 {%- endif -%}
 
+{%- if request.page_type == 'index' -%}
+  {%- assign logo_url = 'pb-snow-logo.png' | file_url -%}
+  {%- assign logo_prefix = logo_url | slice: 0, 2 -%}
+  {%- if logo_prefix == '//' -%}
+    {%- assign logo_url = logo_url | prepend: 'https:' -%}
+  {%- endif -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": {{ shop.name | json }},
+      "url": {{ shop.url | append: routes.root_url | json }},
+      "logo": {{ logo_url | json }}
+    }
+  </script>
+{%- endif -%}
+
 <meta
   name="twitter:card"
   content="summary_large_image"
