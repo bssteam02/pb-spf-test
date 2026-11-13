@@ -11,16 +11,23 @@
   {% endfor %}
 </div>
 
+{% assign current_variant = product.selected_or_first_available_variant %}
+{%- assign current_on_sale = false -%}
+{%- if current_variant.compare_at_price and current_variant.compare_at_price > current_variant.price -%}
+  {%- assign current_on_sale = true -%}
+{%- endif -%}
+
 <div class="product-info">
   <h1>{{ product.title }}</h1>
-  <p>{{ product.price | money }}</p>
+  <p id="ProductPrice-{{ section.id }}">
+    <s data-compare-at-price{% unless current_on_sale %} hidden{% endunless %}>{% if current_on_sale %}{{ current_variant.compare_at_price | money }}{% endif %}</s>
+    <span data-price>{{ current_variant.price | money }}</span>
+  </p>
   <p>{{ product.description }}</p>
 </div>
 
 <div class="product-form">
   {% form 'product', product %}
-    {% assign current_variant = product.selected_or_first_available_variant %}
-
     <select name="id">
       {% for variant in product.variants %}
         <option
@@ -40,6 +47,35 @@
     {{ form | payment_button }}
   {% endform %}
 </div>
+
+<script>
+  (function () {
+    var prices = {
+      {%- for variant in product.variants -%}
+        "{{ variant.id }}": {
+          "price": {{ variant.price | money | json }},
+          "compareAt": {% if variant.compare_at_price and variant.compare_at_price > variant.price %}{{ variant.compare_at_price | money | json }}{% else %}null{% endif %}
+        }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    };
+    var select = document.querySelector('.product-form select[name="id"]');
+    var container = document.getElementById('ProductPrice-{{ section.id }}');
+    if (!select || !container) return;
+    var priceEl = container.querySelector('[data-price]');
+    var compareAtEl = container.querySelector('[data-compare-at-price]');
+
+    function render() {
+      var entry = prices[select.value];
+      if (!entry) return;
+      priceEl.textContent = entry.price;
+      compareAtEl.textContent = entry.compareAt || '';
+      compareAtEl.hidden = !entry.compareAt;
+    }
+
+    select.addEventListener('change', render);
+    window.addEventListener('pageshow', render);
+  })();
+</script>
 
 {% schema %}
 {
