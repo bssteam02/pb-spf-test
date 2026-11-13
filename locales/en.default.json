@@ -19,6 +19,17 @@
     "update": "Update",
     "remove": "Remove"
   },
+  "contact": {
+    "form": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone number (optional)",
+      "message": "Message",
+      "submit": "Send",
+      "success": "Thanks for contacting us. We'll get back to you as soon as possible.",
+      "error_heading": "Your message was not sent. Please fix the following:"
+    }
+  },
   "customers": {
     "login": {
       "email": "Email",
