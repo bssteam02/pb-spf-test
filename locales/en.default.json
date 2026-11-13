@@ -25,6 +25,9 @@
       "password": "Password",
       "submit": "Sign in",
       "title": "Login"
+    },
+    "returns": {
+      "start": "Start a return"
     }
   },
   "collections": {
