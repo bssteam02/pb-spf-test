@@ -41,6 +41,14 @@
     <input type="submit" value="Add to bag">
     {{ form | payment_button }}
   {% endform %}
+
+  {% assign product_type_key = product.type | strip | downcase %}
+  {% if product_type_key == 'snowboard' %}
+    {% render 'zip-checker',
+      zip_list: section.settings.delivery_zip_list,
+      zip_list_url: section.settings.delivery_zip_list_url
+    %}
+  {% endif %}
 </div>
 
 <script>
@@ -63,7 +71,25 @@
 {% schema %}
 {
   "name": "t:general.product",
-  "settings": [],
+  "settings": [
+    {
+      "type": "header",
+      "content": "Delivery ZIP checker (snowboards)"
+    },
+    {
+      "type": "textarea",
+      "id": "delivery_zip_list",
+      "label": "Covered ZIP codes",
+      "info": "PLACEHOLDER LIST - replace with the carrier's list. Paste 5-digit US ZIP codes separated by commas, spaces or new lines. For very long lists, use the file option below instead.",
+      "default": "02108, 10001, 10002, 10003, 30301, 60601, 60602, 78701, 90001, 94103, 98101"
+    },
+    {
+      "type": "text",
+      "id": "delivery_zip_list_url",
+      "label": "Covered ZIP codes file URL (optional)",
+      "info": "Upload the carrier's .txt or .csv file in Settings > Files, copy its link and paste it here. ZIP codes from the file are added to the pasted list."
+    }
+  ],
   "disabled_on": {
     "groups": ["header", "footer"]
   }
