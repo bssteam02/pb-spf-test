@@ -5,15 +5,61 @@
   https://shopify.dev/docs/storefronts/themes/architecture/templates/404
 {% endcomment %}
 
-<h1>{{ '404.title' | t }}</h1>
+<div class="not-found">
+  <h1>{{ '404.heading' | t }}</h1>
 
-<p>
-  {{ '404.not_found' | t }}
-</p>
+  <p>{{ '404.message' | t }}</p>
 
-<a href="{{ routes.all_products_collection_url }}">
-  {{ '404.back_to_shopping' | t }}
-</a>
+  <p>
+    <a class="not-found__button" href="{{ routes.collections_url }}/snow-automated-collection">
+      {{ '404.button' | t }}
+    </a>
+  </p>
+
+  <form action="{{ routes.search_url }}" method="get" role="search">
+    <label for="not-found-search" class="not-found__label">{{ '404.search_label' | t }}</label>
+    <input
+      id="not-found-search"
+      type="search"
+      size="40"
+      name="q"
+      placeholder="{{ '404.search_placeholder' | t }}"
+    >
+    <button type="submit">{{ '404.search_submit' | t }}</button>
+  </form>
+
+  <h2>{{ '404.collections_heading' | t }}</h2>
+
+  <ul class="not-found__collections">
+    <li><a href="{{ routes.collections_url }}/snow-premium">{{ '404.collection_premium' | t }}</a></li>
+    <li><a href="{{ routes.collections_url }}/snow-elite">{{ '404.collection_elite' | t }}</a></li>
+    <li><a href="{{ routes.collections_url }}/snow-pro-picks">{{ '404.collection_pro_picks' | t }}</a></li>
+    <li><a href="{{ routes.collections_url }}/snow-hydrogen">{{ '404.collection_hydrogen' | t }}</a></li>
+  </ul>
+</div>
+
+{% stylesheet %}
+  .not-found {
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    text-align: center;
+  }
+  .not-found__button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border: 1px solid currentColor;
+    text-decoration: none;
+  }
+  .not-found__label {
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .not-found__collections {
+    list-style: none;
+    padding: 0;
+  }
+{% endstylesheet %}
 
 {% schema %}
 {

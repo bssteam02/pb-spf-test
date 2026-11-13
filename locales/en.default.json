@@ -1,8 +1,16 @@
 {
   "404": {
-    "title": "404",
-    "not_found": "Page not found.",
-    "back_to_shopping": "Back to shopping"
+    "heading": "We can't find that page",
+    "message": "The page you're looking for may have moved or no longer exists. Let's get you back to the boards.",
+    "button": "Shop the Automated Collection",
+    "search_label": "Search the store",
+    "search_placeholder": "Search for a board",
+    "search_submit": "Search",
+    "collections_heading": "Browse our board collections",
+    "collection_premium": "Premium",
+    "collection_elite": "Elite",
+    "collection_pro_picks": "Pro Picks",
+    "collection_hydrogen": "Hydrogen"
   },
   "blog": {
     "article_comments": "Comments",
