@@ -1,0 +1,61 @@
+{% comment %}
+  Small labels shown under the product title: allowlisted tags and skill level.
+  Renders nothing when the product has no matching tag or skill level.
+
+  Accepts:
+  - product: {Object} Product object.
+{% endcomment %}
+
+{%- liquid
+  assign allowed_tags = 'Premium|Pro Picks' | split: '|'
+
+  assign skill_level = product.metafields.custom.skill_level.value | strip
+
+  if skill_level == blank
+    assign skill_names = ''
+    for entry in product.metafields.shopify['recommended-skill-level'].value
+      assign entry_name = entry.label.value | strip
+      if entry_name != blank
+        assign skill_names = skill_names | append: '|' | append: entry_name
+      endif
+    endfor
+    assign skill_level = skill_names | remove_first: '|' | replace: '|', ', '
+  endif
+-%}
+
+{%- capture labels -%}
+  {%- for allowed_tag in allowed_tags -%}
+    {%- if product.tags contains allowed_tag -%}
+      <li class="product-labels__item">{{ allowed_tag }}</li>
+    {%- endif -%}
+  {%- endfor -%}
+  {%- if skill_level != blank -%}
+    <li class="product-labels__item">Skill: {{ skill_level }}</li>
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- if labels != blank -%}
+  <ul class="product-labels">
+    {{- labels -}}
+  </ul>
+{%- endif -%}
+
+{% stylesheet %}
+  .product-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .product-labels__item {
+    padding: 0.125rem 0.5rem;
+    border: 1px solid currentcolor;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--color-foreground);
+  }
+{% endstylesheet %}

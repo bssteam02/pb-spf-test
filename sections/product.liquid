@@ -14,6 +14,7 @@
 {% assign current_variant = product.selected_or_first_available_variant %}
 <div class="product-info">
   <h1>{{ product.title }}</h1>
+  {% render 'product-labels', product: product %}
   <p>{{ product.price | money }}</p>
   <p id="ProductVariantStatus-{{ section.id }}">{% if current_variant.sku != blank %}{{ current_variant.sku }} - {% endif %}{% if current_variant.available %}In stock{% else %}Sold out{% endif %}</p>
   <p>{{ product.description }}</p>
