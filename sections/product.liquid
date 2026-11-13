@@ -36,10 +36,31 @@
 
     <input type="text" name="quantity" min="1" value="1">
 
-    <input type="submit" value="Add to bag">
+    <input type="submit" class="product-form__submit" value="Add to bag">
     {{ form | payment_button }}
   {% endform %}
 </div>
+
+{% stylesheet %}
+  .product-form__submit {
+    background-color: #d72c0d;
+    color: #fff;
+    border: 1px solid #d72c0d;
+    cursor: pointer;
+  }
+
+  .product-form__submit:hover,
+  .product-form__submit:focus-visible {
+    background-color: #b82409;
+    border-color: #b82409;
+    color: #fff;
+  }
+
+  .product-form__submit:focus-visible {
+    outline: 2px solid #1a1a1a;
+    outline-offset: 2px;
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
