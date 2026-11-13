@@ -6,7 +6,7 @@
 {% endcomment %}
 
 <div class="contact-form">
-  {% form 'contact', id: 'ContactForm', novalidate: 'novalidate' %}
+  {% form 'contact', id: 'ContactForm' %}
     {% if form.posted_successfully? %}
       <p class="contact-form__message contact-form__message--success" role="status" tabindex="-1" autofocus>
         {{ 'contact.form.success' | t }}
