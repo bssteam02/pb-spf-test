@@ -7,19 +7,43 @@
 
 <h1>{{ 'cart.title' | t }}</h1>
 
-<form action="{{ routes.cart_url }}" method="post">
+<form action="{{ routes.cart_url }}" method="post" novalidate data-cart-form>
   <table>
     {% for item in cart.items %}
+      {%- capture max_stock -%}
+        {%- render 'cart-line-stock',
+          inventory_management: item.variant.inventory_management,
+          inventory_policy: item.variant.inventory_policy,
+          inventory_quantity: item.variant.inventory_quantity,
+          quantity: item.quantity,
+          output: 'max'
+        -%}
+      {%- endcapture -%}
       <tr>
         <td>
           {% render 'image', image: item.image, url: item.url %}
         </td>
         <td>
           <p>{{ item.product.title }}</p>
+          {% render 'cart-line-stock',
+            inventory_management: item.variant.inventory_management,
+            inventory_policy: item.variant.inventory_policy,
+            inventory_quantity: item.variant.inventory_quantity,
+            quantity: item.quantity,
+            output: 'message'
+          %}
           {{ 'cart.remove' | t | link_to: item.url_to_remove }}
         </td>
         <td>
-          <input type="text" name="updates[]" value="{{ item.quantity }}">
+          <input
+            type="text"
+            inputmode="numeric"
+            name="updates[]"
+            value="{{ item.quantity }}"
+            {% if max_stock != blank %}
+              data-max-stock="{{ max_stock }}"
+            {% endif %}
+          >
           <input type="submit" value="{{ 'cart.update' | t }}">
         </td>
       </tr>
@@ -28,6 +52,40 @@
 
   <input type="submit" name="checkout" value="{{ 'cart.checkout' | t }}">
 </form>
+
+{% stylesheet %}
+  .cart-stock-warning {
+    color: #b00020;
+    font-weight: 600;
+  }
+
+  .cart-stock-note {
+    color: #5c5c5c;
+    font-style: italic;
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  (function () {
+    function clampToStock(input) {
+      var max = parseInt(input.getAttribute('data-max-stock'), 10);
+      if (isNaN(max)) return;
+      var value = parseInt(input.value, 10);
+      if (!isNaN(value) && value > max) input.value = max;
+    }
+
+    document.addEventListener('input', function (event) {
+      if (event.target.matches && event.target.matches('[data-cart-form] input[data-max-stock]')) {
+        clampToStock(event.target);
+      }
+    });
+
+    document.addEventListener('submit', function (event) {
+      if (!event.target.matches || !event.target.matches('[data-cart-form]')) return;
+      event.target.querySelectorAll('input[data-max-stock]').forEach(clampToStock);
+    });
+  })();
+{% endjavascript %}
 
 {% schema %}
 {

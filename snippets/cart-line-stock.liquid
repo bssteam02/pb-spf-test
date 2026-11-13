@@ -1,0 +1,51 @@
+{% comment %}
+  Stock check for one cart line.
+
+  Accepts:
+  - inventory_management: variant.inventory_management (blank when stock is not tracked)
+  - inventory_policy: variant.inventory_policy ('deny' or 'continue')
+  - inventory_quantity: variant.inventory_quantity
+  - quantity: quantity of the line in the cart
+  - output: 'message' prints the warning or the soft note, 'max' prints the highest
+    quantity the shopper may order (only for variants that stop selling at zero)
+{%- endcomment -%}
+{%- liquid
+  if inventory_management == blank
+    break
+  endif
+
+  assign stock = inventory_quantity | default: 0 | at_least: 0
+
+  if output == 'max'
+    if inventory_policy == 'deny'
+      echo stock
+    endif
+    break
+  endif
+
+  if quantity <= stock
+    break
+  endif
+
+  if inventory_policy == 'deny'
+    if stock > 0
+      echo '<p class="cart-stock-warning" role="alert">'
+      echo 'cart.stock_only_left' | t: count: stock
+      echo '</p>'
+    else
+      echo '<p class="cart-stock-warning" role="alert">'
+      echo 'cart.stock_sold_out' | t
+      echo '</p>'
+    endif
+  else
+    if stock > 0
+      echo '<p class="cart-stock-note">'
+      echo 'cart.stock_ships_later_partial' | t: count: stock
+      echo '</p>'
+    else
+      echo '<p class="cart-stock-note">'
+      echo 'cart.stock_ships_later' | t
+      echo '</p>'
+    endif
+  endif
+-%}

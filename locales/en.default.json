@@ -17,7 +17,11 @@
     "checkout": "Checkout",
     "title": "Cart",
     "update": "Update",
-    "remove": "Remove"
+    "remove": "Remove",
+    "stock_only_left": "Only {{ count }} left in stock, please lower the quantity",
+    "stock_sold_out": "Sold out, please remove this item from your cart",
+    "stock_ships_later_partial": "Only {{ count }} in stock, the rest ships later",
+    "stock_ships_later": "Ships later"
   },
   "customers": {
     "login": {
