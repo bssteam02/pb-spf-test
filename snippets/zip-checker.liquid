@@ -1,0 +1,169 @@
+{% comment %}
+  "Do we deliver to you?" ZIP checker, shown under Add to bag on snowboard products.
+  Checks the shopper's ZIP against a merchant-maintained list; no server or API is involved.
+
+  Accepts:
+  - zip_list: pasted ZIP codes separated by commas, spaces or new lines
+  - zip_list_url: optional URL of an uploaded .txt/.csv file with the same format
+
+  The widget stays hidden until at least one source is configured, so an empty list can never
+  tell shoppers "we don't deliver".
+{% endcomment %}
+
+{%- assign zip_list = zip_list | default: '' | strip -%}
+{%- assign zip_list_url = zip_list_url | default: '' | strip -%}
+
+{%- if zip_list != blank or zip_list_url != blank -%}
+  {%- assign zip_input_id = 'ZipChecker-' | append: section.id -%}
+  {%- assign zip_result_id = 'ZipCheckerResult-' | append: section.id -%}
+
+  <div
+    class="zip-checker"
+    data-zip-checker
+    data-zip-list="{{ zip_list | escape }}"
+    data-zip-list-url="{{ zip_list_url | escape }}"
+    data-message-invalid="{{ 'product.zip_checker.invalid' | t }}"
+    data-message-yes="{{ 'product.zip_checker.deliverable' | t: zip: '__ZIP__' }}"
+    data-message-no="{{ 'product.zip_checker.not_deliverable' | t: zip: '__ZIP__' }}"
+    data-message-unavailable="{{ 'product.zip_checker.unavailable' | t }}"
+    hidden
+  >
+    <form class="zip-checker__form" novalidate>
+      <label class="zip-checker__label" for="{{ zip_input_id }}">
+        {{ 'product.zip_checker.heading' | t }}
+      </label>
+      <div class="zip-checker__row">
+        <input
+          class="zip-checker__input"
+          id="{{ zip_input_id }}"
+          type="text"
+          inputmode="numeric"
+          autocomplete="postal-code"
+          maxlength="10"
+          placeholder="{{ 'product.zip_checker.placeholder' | t }}"
+          aria-describedby="{{ zip_result_id }}"
+        >
+        <button class="zip-checker__button" type="submit">
+          {{ 'product.zip_checker.check' | t }}
+        </button>
+      </div>
+    </form>
+    <p class="zip-checker__result" id="{{ zip_result_id }}" role="status" aria-live="polite"></p>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .zip-checker {
+    margin-block-start: 1rem;
+  }
+
+  .zip-checker[hidden] {
+    display: none;
+  }
+
+  .zip-checker__label {
+    display: block;
+    margin-block-end: 0.25rem;
+    font-weight: 600;
+  }
+
+  .zip-checker__row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .zip-checker__input {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+  }
+
+  .zip-checker__button {
+    flex: 0 0 auto;
+    min-height: 2.75rem;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .zip-checker__result {
+    margin-block-start: 0.5rem;
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  (() => {
+    const FIVE_DIGIT = /^(\d{5})(?:-\d{4})?$/;
+    const FOUR_DIGIT = /^\d{4}$/;
+
+    // Reads carrier-style lists: commas, spaces, semicolons or new lines, optional quotes and ZIP+4.
+    // A 4-digit entry is a ZIP whose leading zero was lost (e.g. by a spreadsheet), so it is restored.
+    const addZips = (text, target) => {
+      for (const raw of text.replace(/^\uFEFF/, '').split(/[\s,;]+/)) {
+        const token = raw.replace(/^["']+|["']+$/g, '');
+        const five = token.match(FIVE_DIGIT);
+        if (five) target.add(five[1]);
+        else if (FOUR_DIGIT.test(token)) target.add('0' + token);
+      }
+    };
+
+    const init = (root) => {
+      if (root.dataset.zipCheckerReady) return;
+      root.dataset.zipCheckerReady = 'true';
+
+      const form = root.querySelector('form');
+      const input = root.querySelector('input');
+      const result = root.querySelector('[role="status"]');
+      const url = root.dataset.zipListUrl;
+      const zips = new Set();
+      let fileFailed = false;
+
+      addZips(root.dataset.zipList || '', zips);
+      if (zips.size === 0 && !url) return;
+
+      const fileLoaded = url
+        ? fetch(url)
+            .then((response) => {
+              if (!response.ok) throw new Error(response.status);
+              return response.text();
+            })
+            .then((text) => addZips(text, zips))
+            .catch(() => {
+              fileFailed = true;
+            })
+        : Promise.resolve();
+
+      root.hidden = false;
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const match = input.value.trim().match(FIVE_DIGIT);
+        if (!match) {
+          result.textContent = root.dataset.messageInvalid;
+          return;
+        }
+
+        const zip = match[1];
+        await fileLoaded;
+
+        // A failed file load can only prove "yes"; it must never produce a "no".
+        if (zips.has(zip)) {
+          result.textContent = root.dataset.messageYes.replace('__ZIP__', zip);
+        } else if (fileFailed) {
+          result.textContent = root.dataset.messageUnavailable;
+        } else {
+          result.textContent = root.dataset.messageNo.replace('__ZIP__', zip);
+        }
+      });
+    };
+
+    const initAll = () => document.querySelectorAll('[data-zip-checker]').forEach(init);
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAll);
+    else initAll();
+    document.addEventListener('shopify:section:load', initAll);
+  })();
+{% endjavascript %}
