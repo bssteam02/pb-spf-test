@@ -1,13 +1,22 @@
 <footer>
   <div class="footer__copyright">
-    &copy; 2026 PB Test Store &middot; All rights reserved.
+    {%- assign current_year = 'now' | date: '%Y' -%}
+    {%- assign store_name = shop.name | escape -%}
+    {{ 'footer.copyright_html' | t: year: current_year, name: store_name }}
   </div>
 
   <div class="footer__links">
+    {%- assign privacy_choices_url = '/pages/data-sharing-opt-out' -%}
     {% for link in section.settings.menu.links %}
-      {{ link.title | link_to: link.url }}
+      {%- unless link.url == privacy_choices_url -%}
+        {{ link.title | link_to: link.url }}
+      {%- endunless -%}
     {% endfor %}
     <a href="{{ routes.account_url }}">{{ 'customers.returns.start' | t }}</a>
+    {{ 'footer.privacy_choices' | t | link_to: privacy_choices_url }}
+    {% if shop.privacy_policy != blank %}
+      {{ 'footer.privacy_policy' | t | link_to: shop.privacy_policy.url }}
+    {% endif %}
   </div>
 
   <div class="footer__payment">
@@ -46,7 +55,8 @@
     {
       "type": "link_list",
       "id": "menu",
-      "label": "t:labels.menu"
+      "label": "t:labels.menu",
+      "default": "footer"
     },
     {
       "type": "checkbox",
