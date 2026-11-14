@@ -32,6 +32,7 @@
   },
   "footer": {
     "copyright_html": "&copy; {{ year }} {{ name }} &middot; All rights reserved.",
+    "privacy_choices": "Your Privacy Choices",
     "privacy_policy": "Privacy policy"
   },
   "gift_card": {

@@ -6,9 +6,13 @@
   </div>
 
   <div class="footer__links">
+    {%- assign privacy_choices_url = '/pages/data-sharing-opt-out' -%}
     {% for link in section.settings.menu.links %}
-      {{ link.title | link_to: link.url }}
+      {%- unless link.url == privacy_choices_url -%}
+        {{ link.title | link_to: link.url }}
+      {%- endunless -%}
     {% endfor %}
+    {{ 'footer.privacy_choices' | t | link_to: privacy_choices_url }}
     {% if shop.privacy_policy != blank %}
       {{ 'footer.privacy_policy' | t | link_to: shop.privacy_policy.url }}
     {% endif %}
