@@ -36,6 +36,8 @@
 
     <input type="text" name="quantity" min="1" value="1">
 
+    <input type="hidden" name="properties[_product_type]" value="{{ product.type | escape }}">
+
     <input type="submit" value="Add to bag">
     {{ form | payment_button }}
   {% endform %}
