@@ -88,8 +88,7 @@
     const today = calendarDay(p.year, p.month, p.day);
     const cutoff = easternWallTimeToInstant(p.year, p.month, p.day, CUTOFF_HOUR);
     const secondsLeft = (cutoff - nowMs) / 1000;
-    // Under a minute before the cut-off counts as missed: checkout takes longer than that.
-    const beforeCutoff = !isNonWorkingDay(today) && secondsLeft >= 60;
+    const beforeCutoff = !isNonWorkingDay(today) && secondsLeft > 0;
     const dispatch = beforeCutoff ? today : nextWorkingDay(today);
     const earliest = addWorkingDays(dispatch, MIN_WORKING_DAYS);
     const latest = addWorkingDays(dispatch, MAX_WORKING_DAYS);
