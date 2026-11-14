@@ -1,0 +1,68 @@
+{% comment %}
+  Trade page: every snowboard in the 'snow-pro-picks' collection on one page.
+  The collection is looked up by handle so the same code works on dev and live.
+{% endcomment %}
+
+{%- assign pro_picks = collections['snow-pro-picks'] -%}
+
+<h1>{{ page.title }}</h1>
+
+{{ page.content }}
+
+<div class="trade-products">
+  {%- for product in pro_picks.products -%}
+    {%- assign product_type = product.type | strip | downcase -%}
+    {%- if product_type == 'snowboard' -%}
+      <div class="trade-product">
+        {%- if product.featured_image -%}
+          {% render 'image',
+            class: 'trade-product__image',
+            image: product.featured_image,
+            url: product.url,
+            width: 400,
+            height: 400,
+            crop: 'center'
+          %}
+        {%- endif -%}
+        <div class="trade-product__content">
+          <p>{{ product.title | escape | link_to: product.url }}</p>
+          <p class="trade-product__price">
+            <span>{{ product.price | money }}</span>
+            {%- unless product.available -%}
+              <span class="trade-product__sold-out">Sold out</span>
+            {%- endunless -%}
+          </p>
+        </div>
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
+</div>
+
+{% stylesheet %}
+  .trade-products {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .trade-product__price {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .trade-product__sold-out {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8em;
+    padding: 0.1em 0.5em;
+    border: 1px solid currentColor;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Trade products",
+  "settings": []
+}
+{% endschema %}
