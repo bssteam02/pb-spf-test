@@ -11,7 +11,12 @@
   "sections": {
     "main": {
       "type": "product",
-      "settings": {}
+      "settings": {
+        "excluded_products": [
+          "the-3p-fulfilled-snowboard",
+          "the-multi-managed-snowboard"
+        ]
+      }
     }
   },
   "order": [

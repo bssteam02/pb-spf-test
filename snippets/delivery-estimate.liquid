@@ -1,0 +1,46 @@
+{% doc %}
+  Renders the US delivery estimate. The dates are worked out in the browser
+  (US Eastern time) so a cached page never shows a stale promise.
+
+  @param {product} product - The product being viewed
+  @param {variant} variant - The initially selected variant
+  @param {product[]} excluded_products - Products that must not show an estimate
+  @param {string} message_before_cutoff - Wording with {countdown}, {start} and {end}
+  @param {string} message_after_cutoff - Wording with {start} and {end}
+  @param {string} message_christmas - Pre-Christmas notice
+{% enddoc %}
+
+{%- liquid
+  assign show_estimate = false
+  if localization.country.iso_code == 'US'
+    assign show_estimate = true
+    for excluded_product in excluded_products
+      if excluded_product.handle == product.handle
+        assign show_estimate = false
+      endif
+    endfor
+  endif
+-%}
+
+{%- if show_estimate -%}
+  <div
+    class="delivery-estimate"
+    data-delivery-estimate
+    data-variant-id="{{ variant.id }}"
+    data-message-before-cutoff="{{ message_before_cutoff | escape }}"
+    data-message-after-cutoff="{{ message_after_cutoff | escape }}"
+    data-message-christmas="{{ message_christmas | escape }}"
+    hidden
+  >
+    <p class="delivery-estimate__message" data-delivery-estimate-message></p>
+    <p class="delivery-estimate__christmas" data-delivery-estimate-christmas hidden></p>
+    <script type="application/json" data-delivery-estimate-variants>
+      {
+        {%- for product_variant in product.variants -%}
+          "{{ product_variant.id }}": {{ product_variant.available }}{% unless forloop.last %},{% endunless %}
+        {%- endfor -%}
+      }
+    </script>
+  </div>
+  <script src="{{ 'delivery-estimate.js' | asset_url }}" defer></script>
+{%- endif -%}

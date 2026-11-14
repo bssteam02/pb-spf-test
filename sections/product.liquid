@@ -39,12 +39,53 @@
     <input type="submit" value="Add to bag">
     {{ form | payment_button }}
   {% endform %}
+
+  {% render 'delivery-estimate',
+    product: product,
+    variant: current_variant,
+    excluded_products: section.settings.excluded_products,
+    message_before_cutoff: section.settings.delivery_message_before_cutoff,
+    message_after_cutoff: section.settings.delivery_message_after_cutoff,
+    message_christmas: section.settings.delivery_message_christmas
+  %}
 </div>
 
 {% schema %}
 {
   "name": "t:general.product",
-  "settings": [],
+  "settings": [
+    {
+      "type": "header",
+      "content": "Delivery estimate (US shoppers)"
+    },
+    {
+      "type": "product_list",
+      "id": "excluded_products",
+      "label": "Products without a delivery estimate",
+      "info": "Pick products sent by Snow City Warehouse; the theme cannot see which warehouse sends a product.",
+      "limit": 50
+    },
+    {
+      "type": "text",
+      "id": "delivery_message_before_cutoff",
+      "label": "Wording before the 2pm cut-off",
+      "info": "{countdown} is the time left to order, {start} and {end} are the delivery dates.",
+      "default": "Order within {countdown} for delivery {start} - {end}"
+    },
+    {
+      "type": "text",
+      "id": "delivery_message_after_cutoff",
+      "label": "Wording after the cut-off or on a non-working day",
+      "info": "{start} and {end} are the delivery dates.",
+      "default": "Order now for delivery {start} - {end}"
+    },
+    {
+      "type": "text",
+      "id": "delivery_message_christmas",
+      "label": "Wording for delivery before Christmas",
+      "default": "Order by 18 December for delivery before Christmas"
+    }
+  ],
   "disabled_on": {
     "groups": ["header", "footer"]
   }
