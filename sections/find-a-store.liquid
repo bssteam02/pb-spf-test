@@ -1,0 +1,366 @@
+{% comment %}
+  Find a store: map, weekly hours, December exceptions and open-now status.
+  Times are written as 24h "HH:MM-HH:MM" (or "closed") and displayed as "9:00 am – 6:00 pm".
+  Open-now is computed in America/Denver, whatever the shopper's time zone.
+  December exceptions (MM-DD) replace the normal hours every year.
+  lat/lng are the pin positions; a store with null lat/lng gets no pin.
+{% endcomment %}
+
+<div class="find-a-store" data-find-a-store>
+  <h1>{{ page.title }}</h1>
+
+  {{ page.content }}
+
+  <div class="find-a-store__map" data-fas-map role="group" aria-label="Map of our stores" hidden></div>
+
+  <ul class="find-a-store__list" data-fas-list></ul>
+
+  <noscript>
+    <p>Please enable JavaScript to see our store addresses and opening hours.</p>
+  </noscript>
+
+  <script type="application/json" data-fas-data>
+    [
+      {
+        "id": "denver-warehouse",
+        "name": "Denver Warehouse",
+        "address": "1200 Example St, Denver, CO 80202",
+        "phone": "+1 303 555 0142",
+        "lat": null,
+        "lng": null,
+        "weekly": [
+          { "label": "Mon – Fri", "days": [1, 2, 3, 4, 5], "hours": "09:00-18:00" },
+          { "label": "Sat", "days": [6], "hours": "10:00-16:00" },
+          { "label": "Sun", "days": [0], "hours": "closed" }
+        ],
+        "exceptions": [
+          { "date": "12-24", "label": "24 Dec", "hours": "09:00-14:00" },
+          { "date": "12-25", "label": "25 Dec", "hours": "closed" },
+          { "date": "12-31", "label": "31 Dec", "hours": "09:00-14:00" }
+        ]
+      },
+      {
+        "id": "shop-location",
+        "name": "Shop location",
+        "address": "88 Sample Ave, Boulder, CO 80302",
+        "phone": "+1 303 555 0177",
+        "lat": null,
+        "lng": null,
+        "weekly": [
+          { "label": "Mon – Fri", "days": [1, 2, 3, 4, 5], "hours": "10:00-18:00" },
+          { "label": "Sat", "days": [6], "hours": "10:00-17:00" },
+          { "label": "Sun", "days": [0], "hours": "11:00-16:00" }
+        ],
+        "exceptions": [
+          { "date": "12-24", "label": "24 Dec", "hours": "10:00-14:00" },
+          { "date": "12-25", "label": "25 Dec", "hours": "closed" },
+          { "date": "12-31", "label": "31 Dec", "hours": "10:00-14:00" }
+        ]
+      }
+    ]
+  </script>
+</div>
+
+<script>
+  (function () {
+    var root = document.querySelector('[data-find-a-store]');
+    if (!root) return;
+
+    var TZ = 'America/Denver';
+    var stores = JSON.parse(root.querySelector('[data-fas-data]').textContent);
+
+    function parseTime(value) {
+      var parts = value.split(':');
+      return Number(parts[0]) * 60 + Number(parts[1]);
+    }
+
+    function format(minutes) {
+      var h = Math.floor(minutes / 60);
+      var m = String(minutes % 60).padStart(2, '0');
+      return (h % 12 || 12) + ':' + m + ' ' + (h >= 12 ? 'pm' : 'am');
+    }
+
+    function formatHours(hours) {
+      if (hours === 'closed') return 'Closed';
+      var range = hours.split('-');
+      return format(parseTime(range[0])) + ' – ' + format(parseTime(range[1]));
+    }
+
+    function el(tag, className, text) {
+      var node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function hoursList(rows) {
+      var dl = el('dl', 'find-a-store__hours');
+      rows.forEach(function (row) {
+        dl.appendChild(el('dt', '', row.label));
+        dl.appendChild(el('dd', '', formatHours(row.hours)));
+      });
+      return dl;
+    }
+
+    var list = root.querySelector('[data-fas-list]');
+    stores.forEach(function (store) {
+      var card = el('li', 'find-a-store__store');
+      card.id = store.id;
+      card.setAttribute('data-fas-store', store.id);
+      card.appendChild(el('h2', '', store.name));
+
+      var status = el('p', 'find-a-store__status');
+      status.setAttribute('data-fas-status', '');
+      status.setAttribute('aria-live', 'polite');
+      card.appendChild(status);
+
+      card.appendChild(el('address', '', store.address));
+
+      var phone = el('p');
+      var tel = el('a', '', store.phone);
+      tel.href = 'tel:' + store.phone.replace(/\s/g, '');
+      phone.appendChild(tel);
+      card.appendChild(phone);
+
+      card.appendChild(el('h3', '', 'Opening hours'));
+      card.appendChild(hoursList(store.weekly));
+      card.appendChild(el('h3', '', 'December opening hours'));
+      card.appendChild(hoursList(store.exceptions));
+      list.appendChild(card);
+    });
+
+    function denverNow() {
+      var parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: TZ,
+        weekday: 'short',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23'
+      }).formatToParts(new Date());
+      var map = {};
+      parts.forEach(function (p) {
+        map[p.type] = p.value;
+      });
+      return {
+        day: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(map.weekday),
+        date: map.month + '-' + map.day,
+        minutes: Number(map.hour) * 60 + Number(map.minute)
+      };
+    }
+
+    function todaysHours(store, now) {
+      var i;
+      for (i = 0; i < store.exceptions.length; i++) {
+        if (store.exceptions[i].date === now.date) return store.exceptions[i].hours;
+      }
+      for (i = 0; i < store.weekly.length; i++) {
+        if (store.weekly[i].days.indexOf(now.day) !== -1) return store.weekly[i].hours;
+      }
+      return 'closed';
+    }
+
+    function statusText(store, now) {
+      var hours = todaysHours(store, now);
+      if (hours !== 'closed') {
+        var range = hours.split('-');
+        var open = parseTime(range[0]);
+        var close = parseTime(range[1]);
+        if (now.minutes >= open && now.minutes < close) {
+          return { open: true, text: 'Open now · closes ' + format(close) };
+        }
+      }
+      return { open: false, text: 'Closed now' };
+    }
+
+    function updateStatus() {
+      var now = denverNow();
+      stores.forEach(function (store) {
+        var node = root.querySelector('[data-fas-store="' + store.id + '"] [data-fas-status]');
+        var status = statusText(store, now);
+        node.textContent = status.text;
+        node.classList.toggle('is-open', status.open);
+        node.classList.toggle('is-closed', !status.open);
+      });
+    }
+
+    updateStatus();
+    setInterval(updateStatus, 60000);
+
+    /* Map: OpenStreetMap raster tiles positioned by hand, so no library and no API key are needed. */
+    var mapEl = root.querySelector('[data-fas-map]');
+    var pinned = stores.filter(function (s) {
+      return typeof s.lat === 'number' && typeof s.lng === 'number';
+    });
+    if (!pinned.length) return;
+
+    var TILE = 256;
+
+    function project(lat, lng, zoom) {
+      var scale = TILE * Math.pow(2, zoom);
+      var sin = Math.sin((lat * Math.PI) / 180);
+      return {
+        x: ((lng + 180) / 360) * scale,
+        y: (0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI)) * scale
+      };
+    }
+
+    function drawMap() {
+      var width = mapEl.clientWidth;
+      var height = mapEl.clientHeight;
+      var zoom = 16;
+      var box;
+      for (; zoom > 1; zoom--) {
+        var pts = pinned.map(function (s) {
+          return project(s.lat, s.lng, zoom);
+        });
+        var xs = pts.map(function (p) { return p.x; });
+        var ys = pts.map(function (p) { return p.y; });
+        box = {
+          minX: Math.min.apply(null, xs),
+          maxX: Math.max.apply(null, xs),
+          minY: Math.min.apply(null, ys),
+          maxY: Math.max.apply(null, ys)
+        };
+        if (box.maxX - box.minX <= width - 120 && box.maxY - box.minY <= height - 120) break;
+      }
+      var cx = (box.minX + box.maxX) / 2;
+      var cy = (box.minY + box.maxY) / 2;
+      var left = cx - width / 2;
+      var top = cy - height / 2;
+      var max = Math.pow(2, zoom);
+
+      mapEl.textContent = '';
+      for (var tx = Math.floor(left / TILE); tx <= Math.floor((left + width) / TILE); tx++) {
+        for (var ty = Math.floor(top / TILE); ty <= Math.floor((top + height) / TILE); ty++) {
+          if (ty < 0 || ty >= max) continue;
+          var img = document.createElement('img');
+          img.alt = '';
+          img.width = TILE;
+          img.height = TILE;
+          img.loading = 'lazy';
+          img.src = 'https://tile.openstreetmap.org/' + zoom + '/' + (((tx % max) + max) % max) + '/' + ty + '.png';
+          img.style.left = Math.round(tx * TILE - left) + 'px';
+          img.style.top = Math.round(ty * TILE - top) + 'px';
+          mapEl.appendChild(img);
+        }
+      }
+
+      pinned.forEach(function (store) {
+        var p = project(store.lat, store.lng, zoom);
+        var pin = el('a', 'find-a-store__pin', store.name);
+        pin.href = '#' + store.id;
+        pin.style.left = Math.round(p.x - left) + 'px';
+        pin.style.top = Math.round(p.y - top) + 'px';
+        mapEl.appendChild(pin);
+      });
+
+      var credit = el('a', 'find-a-store__credit', '© OpenStreetMap contributors');
+      credit.href = 'https://www.openstreetmap.org/copyright';
+      credit.target = '_blank';
+      credit.rel = 'noopener';
+      mapEl.appendChild(credit);
+    }
+
+    mapEl.hidden = false;
+    drawMap();
+    window.addEventListener('resize', drawMap);
+  })();
+</script>
+
+{% stylesheet %}
+  .find-a-store {
+    padding-block: 2rem;
+  }
+  .find-a-store h1 {
+    margin-block-end: 1rem;
+  }
+  .find-a-store__map {
+    position: relative;
+    overflow: hidden;
+    height: 360px;
+    margin-block: 1.5rem;
+    background: #e5e3df;
+    border-radius: 8px;
+  }
+  .find-a-store__map img {
+    position: absolute;
+    max-width: none;
+  }
+  .find-a-store__pin {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: #c0392b;
+    color: #fff;
+    font-size: 0.8125rem;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .find-a-store__pin::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -6px;
+    border: 6px solid transparent;
+    border-top-color: #c0392b;
+  }
+  .find-a-store__credit {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: 2px 6px;
+    background: rgb(255 255 255 / 80%);
+    color: #333;
+    font-size: 0.6875rem;
+  }
+  .find-a-store__list {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .find-a-store__store {
+    padding: 1.25rem;
+    border: 1px solid rgb(0 0 0 / 15%);
+    border-radius: 8px;
+  }
+  .find-a-store__store h3 {
+    margin-block: 1rem 0.25rem;
+    font-size: 1rem;
+  }
+  .find-a-store address {
+    font-style: normal;
+  }
+  .find-a-store__status {
+    margin-block: 0.25rem 0.75rem;
+    font-weight: 700;
+  }
+  .find-a-store__status.is-open {
+    color: #1a7f37;
+  }
+  .find-a-store__status.is-closed {
+    color: #b42318;
+  }
+  .find-a-store__hours {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.25rem 1rem;
+    margin: 0;
+  }
+  .find-a-store__hours dd {
+    margin: 0;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Find a store",
+  "settings": []
+}
+{% endschema %}
