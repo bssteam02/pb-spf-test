@@ -18,6 +18,7 @@
     "group": "Group",
     "header": "Header",
     "layout": "Layout",
+    "loyalty_points": "Loyalty points",
     "main": "Main",
     "page": "Page",
     "password": "Password",
@@ -46,9 +47,15 @@
     "padding": "Padding",
     "page_margin": "Page margin",
     "page_width": "Page width",
+    "points_message": "Points message",
+    "points_rate": "Points per dollar",
     "show_payment_icons": "Show payment icons",
     "text_style": "Text style",
     "text": "Text"
+  },
+  "info": {
+    "points_message": "Shown to logged-in customers on product and cart pages. The letter X is replaced by the number of points.",
+    "points_rate": "Points earned per dollar paid (in the shopper's own currency), rounded down. Use 0 to hide the message."
   },
   "options": {
     "alignment": {

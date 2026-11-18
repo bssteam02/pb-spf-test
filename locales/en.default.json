@@ -17,7 +17,8 @@
     "checkout": "Checkout",
     "title": "Cart",
     "update": "Update",
-    "remove": "Remove"
+    "remove": "Remove",
+    "gift_card_points_note": "Gift card payments don't earn points"
   },
   "customers": {
     "login": {

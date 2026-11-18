@@ -79,5 +79,24 @@
         "default": 4
       }
     ]
+  },
+  {
+    "name": "t:general.loyalty_points",
+    "settings": [
+      {
+        "type": "number",
+        "id": "points_rate",
+        "label": "t:labels.points_rate",
+        "info": "t:info.points_rate",
+        "default": 1
+      },
+      {
+        "type": "text",
+        "id": "points_message",
+        "label": "t:labels.points_message",
+        "info": "t:info.points_message",
+        "default": "You'll earn X points"
+      }
+    ]
   }
 ]

@@ -36,10 +36,20 @@
 
     <input type="text" name="quantity" min="1" value="1">
 
+    {% render 'loyalty-points',
+      context: 'product',
+      variants: product.variants,
+      current_variant: current_variant
+    %}
+
     <input type="submit" value="Add to bag">
     {{ form | payment_button }}
   {% endform %}
 </div>
+
+{% if customer %}
+  <script src="{{ 'loyalty-points.js' | asset_url }}" defer></script>
+{% endif %}
 
 {% schema %}
 {

@@ -1,0 +1,53 @@
+{% comment %}
+  Loyalty points message for logged-in customers.
+
+  Accepts:
+  - context: 'product' or 'cart'
+  - variants: (product only) the product's variants
+  - current_variant: (product only) the variant selected on page load
+
+  Points = floor(amount in the shopper's currency * rate). Integer maths on
+  amounts in cents (rate scaled to thousandths) so float errors cannot round a
+  whole number down. In the message, the capital letter X is replaced by the
+  figure.
+{% endcomment %}
+
+{%- liquid
+  assign rate = settings.points_rate | default: 0
+  assign rate_milli = rate | times: 1000 | round
+  assign message = settings.points_message | strip
+
+  assign show = false
+  if customer and rate_milli > 0 and message != blank
+    assign show = true
+  endif
+
+  if show and context == 'cart' and cart.item_count == 0
+    assign show = false
+  endif
+-%}
+
+{%- if show -%}
+  {%- if context == 'product' -%}
+    {%- assign points = current_variant.price | times: rate_milli | divided_by: 100000 | floor -%}
+    {%- capture prices -%}
+      {
+      {%- for variant in variants -%}
+        "{{ variant.id }}": {{ variant.price }}{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+      }
+    {%- endcapture -%}
+    <p
+      data-loyalty-product
+      data-rate-milli="{{ rate_milli }}"
+      data-message="{{ message | escape }}"
+      data-prices="{{ prices | strip_newlines | escape }}"
+    >
+      {{- message | escape | replace: 'X', points -}}
+    </p>
+  {%- else -%}
+    {%- assign points = cart.total_price | times: rate_milli | divided_by: 100000 | floor -%}
+    <p>{{ message | escape | replace: 'X', points }}</p>
+    <p>{{ 'cart.gift_card_points_note' | t }}</p>
+  {%- endif -%}
+{%- endif -%}
