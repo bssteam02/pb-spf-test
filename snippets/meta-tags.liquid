@@ -57,7 +57,8 @@
   >
 {%- endif -%}
 
-{%- if request.page_type == 'product' -%}
+{%- capture pro_picks_gated -%}{% render 'pro-picks-gated', gated_product: product %}{%- endcapture -%}
+{%- if request.page_type == 'product' and pro_picks_gated == blank -%}
   <script type="application/ld+json">
     {{ product | structured_data }}
   </script>
@@ -86,7 +87,11 @@
 >
 
 <title>
-  {{ page_title }}
+  {%- if request.page_type == 'search' and search.performed and customer == blank -%}
+    {{ 'search.title' | t }}: {{ search.terms | escape }}
+  {%- else -%}
+    {{ page_title }}
+  {%- endif -%}
   {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%}
   {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
   {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}

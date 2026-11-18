@@ -7,6 +7,11 @@
 
 <h1>{{ collection.title }}</h1>
 
+{%- capture pro_picks_collection_gated -%}{% render 'pro-picks-gated', gated_collection: collection %}{%- endcapture -%}
+
+{% if pro_picks_collection_gated != blank %}
+  {% render 'pro-picks-login' %}
+{% else %}
 {% liquid
   assign promo = null
   for block in section.blocks
@@ -17,12 +22,18 @@
   endfor
   assign promo_position = promo.settings.position | default: 3
   assign promo_rendered = false
+  assign shown_count = 0
 %}
 
 <div class="collection-products{% if promo %} collection-products--has-promo{% endif %}">
   {% paginate collection.products by 20 %}
     {% for product in collection.products %}
-      {% if promo and promo_rendered == false and forloop.index == promo_position %}
+      {%- capture pro_picks_gated -%}{% render 'pro-picks-gated', gated_product: product %}{%- endcapture -%}
+      {% if pro_picks_gated != blank %}
+        {% continue %}
+      {% endif %}
+      {% assign shown_count = shown_count | plus: 1 %}
+      {% if promo and promo_rendered == false and shown_count == promo_position %}
         {% render 'collection-promo-tile', block: promo %}
         {% assign promo_rendered = true %}
       {% endif %}
@@ -51,6 +62,7 @@
     {{ paginate | default_pagination }}
   {% endpaginate %}
 </div>
+{% endif %}
 
 {% stylesheet %}
   .collection-products {

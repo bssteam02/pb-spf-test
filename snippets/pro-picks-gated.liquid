@@ -1,0 +1,19 @@
+{% comment %}
+  Outputs "true" when the viewer is a guest and the given product (or collection)
+  belongs to the Pro Picks collection, otherwise nothing. Capture the output:
+
+    {%- capture pro_picks_gated -%}{% render 'pro-picks-gated', gated_product: product %}{%- endcapture -%}
+    {% if pro_picks_gated != blank %} ... {% endif %}
+
+  Membership is read from the product's collections, never from a product list.
+{% endcomment %}
+{%- unless customer -%}
+  {%- if gated_collection and gated_collection.handle == 'snow-pro-picks' -%}
+    true
+  {%- elsif gated_product -%}
+    {%- assign gated_handles = gated_product.collections | map: 'handle' -%}
+    {%- if gated_handles contains 'snow-pro-picks' -%}
+      true
+    {%- endif -%}
+  {%- endif -%}
+{%- endunless -%}
