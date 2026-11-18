@@ -7,6 +7,21 @@
 
 <h1>{{ page.title }}</h1>
 
+{%- if customer == blank -%}
+  {%- assign login_url = routes.account_login_url -%}
+  {%- assign return_to = request.path | url_encode -%}
+  {%- if login_url contains '?' -%}
+    {%- assign login_url = login_url | append: '&return_to=' | append: return_to -%}
+  {%- else -%}
+    {%- assign login_url = login_url | append: '?return_to=' | append: return_to -%}
+  {%- endif -%}
+  <p class="trade-products__login">
+    This page is for logged-in customers.
+    <a href="{{ login_url }}">Log in</a>
+    to see it.
+  </p>
+{%- else -%}
+
 {{ page.content }}
 
 <div class="trade-products">
@@ -37,6 +52,7 @@
     {%- endif -%}
   {%- endfor -%}
 </div>
+{%- endif -%}
 
 {% stylesheet %}
   .trade-products {
