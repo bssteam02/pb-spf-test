@@ -2,12 +2,136 @@
   This section is used in the page template to render store pages like About us
   or Contact us.
 
+  Guide pages (handles listed in guide_handles) also get a side menu and a bottom
+  link row. Both list only guides that are currently published: the `pages` object
+  only resolves published pages, so a hidden guide is skipped and a guide that gets
+  published later shows up on its own.
+
   https://shopify.dev/docs/storefronts/themes/architecture/templates/page
 {% endcomment %}
 
-<h1>{{ page.title }}</h1>
+{%- liquid
+  assign guide_handles = 'size-guide,fit-guide,care-guide,wax-guide' | split: ','
 
-{{ page.content }}
+  if guide_handles contains page.handle
+    assign is_guide_page = true
+  else
+    assign is_guide_page = false
+  endif
+-%}
+
+{%- if is_guide_page -%}
+  {%- capture guide_items -%}
+    {%- for handle in guide_handles -%}
+      {%- assign guide = pages[handle] -%}
+      {%- if guide.handle == handle -%}
+        <li class="guide-nav__item">
+          {%- if guide.handle == page.handle -%}
+            <a class="guide-nav__link" href="{{ guide.url }}" aria-current="page">{{ guide.title | escape }}</a>
+          {%- else -%}
+            <a class="guide-nav__link" href="{{ guide.url }}">{{ guide.title | escape }}</a>
+          {%- endif -%}
+        </li>
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+
+  <div class="guide-page">
+    {%- if guide_items != blank -%}
+      <nav class="guide-nav guide-nav--side" aria-label="{{ 'guides.menu_label' | t }}">
+        <ul class="guide-nav__list">{{ guide_items }}</ul>
+      </nav>
+    {%- endif -%}
+
+    <div class="guide-page__content">
+      <h1>{{ page.title }}</h1>
+
+      {{ page.content }}
+    </div>
+
+    {%- if guide_items != blank -%}
+      <nav class="guide-nav guide-nav--row" aria-label="{{ 'guides.menu_label' | t }}">
+        <ul class="guide-nav__list">{{ guide_items }}</ul>
+      </nav>
+    {%- endif -%}
+  </div>
+{%- else -%}
+  <h1>{{ page.title }}</h1>
+
+  {{ page.content }}
+{%- endif -%}
+
+{% stylesheet %}
+  .guide-page {
+    display: grid;
+    grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr);
+    grid-template-areas:
+      'menu content'
+      '. links';
+    column-gap: 2rem;
+    row-gap: 2rem;
+  }
+
+  .guide-nav--side {
+    grid-area: menu;
+  }
+
+  .guide-page__content {
+    grid-area: content;
+  }
+
+  .guide-nav--row {
+    grid-area: links;
+  }
+
+  .guide-nav__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .guide-nav--side .guide-nav__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .guide-nav--row .guide-nav__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0;
+  }
+
+  .guide-nav--row .guide-nav__item + .guide-nav__item::before {
+    content: '\00b7';
+    padding-inline: 0.75rem;
+  }
+
+  .guide-nav__link {
+    color: inherit;
+  }
+
+  .guide-nav__link[aria-current='page'] {
+    font-weight: bold;
+    text-decoration: none;
+  }
+
+  @media screen and (max-width: 749px) {
+    .guide-page {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        'menu'
+        'content'
+        'links';
+    }
+
+    .guide-nav--side .guide-nav__list {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+    }
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
