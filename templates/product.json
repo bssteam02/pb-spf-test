@@ -12,9 +12,16 @@
     "main": {
       "type": "product",
       "settings": {}
+    },
+    "pay_in_4": {
+      "type": "product-pay-in-4",
+      "settings": {
+        "pay_in_4_minimum": 50
+      }
     }
   },
   "order": [
-    "main"
+    "main",
+    "pay_in_4"
   ]
 }

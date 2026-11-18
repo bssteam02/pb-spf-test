@@ -29,9 +29,32 @@
   <input type="submit" name="checkout" value="{{ 'cart.checkout' | t }}">
 </form>
 
+{%- liquid
+  assign pay_in_4_minimum_cents = section.settings.pay_in_4_minimum | times: 100
+-%}
+{%- if section.blocks.size > 0 and cart.currency.iso_code == 'USD' and cart.total_price >= pay_in_4_minimum_cents -%}
+  <div class="cart-pay-in-4">
+    <p>
+      {{ 'cart.total' | t }}:
+      <span class="cart-total" id="cart-total" data-amount="{{ cart.total_price }}">{{ cart.total_price | money }}</span>
+    </p>
+    {%- for block in section.blocks -%}
+      {% render block %}
+    {%- endfor -%}
+  </div>
+{%- endif -%}
+
 {% schema %}
 {
   "name": "t:general.cart",
-  "settings": []
+  "blocks": [{ "type": "@app" }],
+  "settings": [
+    {
+      "type": "number",
+      "id": "pay_in_4_minimum",
+      "label": "t:labels.pay_in_4_minimum",
+      "default": 50
+    }
+  ]
 }
 {% endschema %}

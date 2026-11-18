@@ -1,0 +1,36 @@
+{% comment %}
+  Hosts app blocks (e.g. Affirm 'pay in 4' messaging) under the main product
+  section. Renders nothing unless app blocks are placed, the shopper's
+  currency is USD and the selected or first available variant's price meets
+  the minimum set in the theme editor.
+{% endcomment %}
+
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign pay_in_4_minimum_cents = section.settings.pay_in_4_minimum | times: 100
+-%}
+{%- if section.blocks.size > 0 and cart.currency.iso_code == 'USD' and current_variant.price >= pay_in_4_minimum_cents -%}
+  <div class="product-pay-in-4">
+    {%- for block in section.blocks -%}
+      {% render block %}
+    {%- endfor -%}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "t:general.product_pay_in_4",
+  "blocks": [{ "type": "@app" }],
+  "settings": [
+    {
+      "type": "number",
+      "id": "pay_in_4_minimum",
+      "label": "t:labels.pay_in_4_minimum",
+      "default": 50
+    }
+  ],
+  "enabled_on": {
+    "templates": ["product"]
+  }
+}
+{% endschema %}
