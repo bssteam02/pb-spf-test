@@ -7,9 +7,18 @@
 
 <h1>{{ collection.title }}</h1>
 
+{%- capture pro_picks_collection_gated -%}{% render 'pro-picks-gated', gated_collection: collection %}{%- endcapture -%}
+
+{% if pro_picks_collection_gated != blank %}
+  {% render 'pro-picks-login' %}
+{% else %}
 <div class="collection-products">
   {% paginate collection.products by 20 %}
     {% for product in collection.products %}
+      {%- capture pro_picks_gated -%}{% render 'pro-picks-gated', gated_product: product %}{%- endcapture -%}
+      {% if pro_picks_gated != blank %}
+        {% continue %}
+      {% endif %}
       <div class="collection-product">
         {% if product.featured_image %}
           {% render 'image',
@@ -31,6 +40,7 @@
     {{ paginate | default_pagination }}
   {% endpaginate %}
 </div>
+{% endif %}
 
 {% stylesheet %}
   .collection-products {

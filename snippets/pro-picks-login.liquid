@@ -1,0 +1,16 @@
+{%- assign login_url = routes.account_login_url -%}
+{%- if login_url contains '?' -%}
+  {%- assign login_sep = '&' -%}
+{%- else -%}
+  {%- assign login_sep = '?' -%}
+{%- endif -%}
+{%- assign return_path = request.path | url_encode -%}
+
+<div class="pro-picks-login">
+  <p>{{ 'pro_picks.login_message' | t }}</p>
+  <p>
+    <a href="{{ login_url }}{{ login_sep }}return_url={{ return_path }}&return_to={{ return_path }}">
+      {{- 'pro_picks.login_link' | t -}}
+    </a>
+  </p>
+</div>

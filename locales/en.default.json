@@ -42,11 +42,16 @@
     "password": "Password",
     "enter": "Enter"
   },
+  "pro_picks": {
+    "login_message": "These boards are for logged-in customers.",
+    "login_link": "Log in to see Pro Picks"
+  },
   "search": {
     "title": "Search",
     "placeholder": "Search articles, pages, or products",
     "submit": "Search",
     "no_results_html": "No results found for {{ terms }}",
-    "results_for_html": "{{ count }} results found for {{ terms }}"
+    "results_for_html": "{{ count }} results found for {{ terms }}",
+    "results_for_guest_html": "Results for {{ terms }}"
   }
 }
