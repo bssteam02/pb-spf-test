@@ -1,0 +1,79 @@
+{%- comment -%}
+  Google Tag Manager. The container ID is defined here and nowhere else.
+  Render with position: 'head' (early in <head>) and position: 'body' (right after <body>).
+{%- endcomment -%}
+{%- liquid
+  assign gtm_id = 'GTM-TESTSTORE'
+-%}
+{%- if position == 'body' -%}
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ gtm_id | url_encode }}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+{%- else -%}
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    window.gtmThemeCurrency = {{ cart.currency.iso_code | json }};
+
+    (function () {
+      var DENIED = 'denied';
+      var GRANTED = 'granted';
+
+      function state() {
+        var privacy = window.Shopify && window.Shopify.customerPrivacy;
+        if (!privacy || typeof privacy.marketingAllowed !== 'function') {
+          return { marketing: false, analytics: false, preferences: false };
+        }
+        return {
+          marketing: privacy.marketingAllowed(),
+          analytics: privacy.analyticsProcessingAllowed(),
+          preferences: privacy.preferencesProcessingAllowed()
+        };
+      }
+
+      function signals() {
+        var s = state();
+        return {
+          ad_storage: s.marketing ? GRANTED : DENIED,
+          ad_user_data: s.marketing ? GRANTED : DENIED,
+          ad_personalization: s.marketing ? GRANTED : DENIED,
+          analytics_storage: s.analytics ? GRANTED : DENIED,
+          functionality_storage: s.preferences ? GRANTED : DENIED,
+          personalization_storage: s.preferences ? GRANTED : DENIED
+        };
+      }
+
+      var defaults = signals();
+      defaults.security_storage = GRANTED;
+      defaults.wait_for_update = 500;
+      gtag('consent', 'default', defaults);
+
+      function update() {
+        gtag('consent', 'update', signals());
+      }
+
+      function loadPrivacyApi(attempt) {
+        var shopify = window.Shopify;
+        if (shopify && typeof shopify.loadFeatures === 'function') {
+          shopify.loadFeatures([{ name: 'consent-tracking-api', version: '0.1' }], function (error) {
+            if (!error) update();
+          });
+        } else if (attempt < 50) {
+          setTimeout(function () { loadPrivacyApi(attempt + 1); }, 100);
+        }
+      }
+
+      document.addEventListener('visitorConsentCollected', update);
+      loadPrivacyApi(0);
+    })();
+
+    (function (w, d, s, l, i) {
+      w[l] = w[l] || [];
+      w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+      var f = d.getElementsByTagName(s)[0];
+      var j = d.createElement(s);
+      j.async = true;
+      j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i;
+      f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', {{ gtm_id | json }});
+  </script>
+  <script src="{{ 'gtm-events.js' | asset_url }}" defer></script>
+{%- endif -%}

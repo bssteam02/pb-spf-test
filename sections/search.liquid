@@ -50,6 +50,12 @@
   {% endif %}
 {% endif %}
 
+{% if search.performed and search.terms != blank %}
+  <script type="application/json" data-gtm-search>
+    { "term": {{ search.terms | json }} }
+  </script>
+{% endif %}
+
 {% stylesheet %}
   .search-results {
     display: grid;
