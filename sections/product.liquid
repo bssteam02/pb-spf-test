@@ -5,6 +5,8 @@
   https://shopify.dev/docs/storefronts/themes/architecture/templates/product
 {% endcomment %}
 
+{%- capture pro_picks_gated -%}{% render 'pro-picks-gated', gated_product: product %}{%- endcapture -%}
+
 <div class="product-images">
   {% for image in product.images %}
     {% render 'image', class: 'product-image', image: image %}
@@ -15,11 +17,16 @@
 <div class="product-info">
   <h1>{{ product.title }}</h1>
   {% render 'product-labels', product: product %}
-  <p>{{ product.price | money }}</p>
+  {% if pro_picks_gated == blank %}
+    <p>{{ product.price | money }}</p>
+  {% endif %}
   <p id="ProductVariantStatus-{{ section.id }}">{% if current_variant.sku != blank %}{{ current_variant.sku }} - {% endif %}{% if current_variant.available %}In stock{% else %}Sold out{% endif %}</p>
   <p>{{ product.description }}</p>
 </div>
 
+{% if pro_picks_gated != blank %}
+  {% render 'pro-picks-login' %}
+{% else %}
 <div class="product-form">
   {% form 'product', product %}
     {% assign current_variant = product.selected_or_first_available_variant %}
@@ -53,7 +60,9 @@
     %}
   {% endif %}
 </div>
+{% endif %}
 
+{% if pro_picks_gated == blank %}
 <script>
   (function () {
     var variants = {{ product.variants | json }};
@@ -70,6 +79,7 @@
     });
   })();
 </script>
+{% endif %}
 
 {% assign gtm_variant = product.selected_or_first_available_variant %}
 <script type="application/json" data-gtm-product>
