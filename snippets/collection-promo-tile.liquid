@@ -1,0 +1,128 @@
+{% doc %}
+  Renders the promo tile that sits inside the collection product grid.
+
+  @param {object} block - The promo_tile block of the collection section
+
+  @example
+  {% render 'collection-promo-tile', block: promo %}
+{% enddoc %}
+
+{% liquid
+  assign image = block.settings.image
+  assign headline = block.settings.headline
+  assign image_alt = image.alt | default: headline
+  assign image_style = 'object-position: ' | append: image.presentation.focal_point
+  assign button_1_visible = false
+  if block.settings.button_1_label != blank and block.settings.button_1_link != blank
+    assign button_1_visible = true
+  endif
+  assign button_2_visible = false
+  if block.settings.button_2_label != blank and block.settings.button_2_link != blank
+    assign button_2_visible = true
+  endif
+%}
+
+<div class="collection-promo-tile" {{ block.shopify_attributes }}>
+  <div class="collection-promo-tile__media">
+    {{
+      image
+      | image_url: width: 1600
+      | image_tag:
+        class: 'collection-promo-tile__image',
+        widths: '800, 1200, 1600',
+        sizes: '(min-width: 1000px) 66vw, 100vw',
+        loading: 'lazy',
+        alt: image_alt,
+        style: image_style
+    }}
+  </div>
+  {% if headline != blank or button_1_visible or button_2_visible %}
+    <div class="collection-promo-tile__content">
+      {% if headline != blank %}
+        <h2 class="collection-promo-tile__headline">{{ headline | escape }}</h2>
+      {% endif %}
+      {% if button_1_visible or button_2_visible %}
+        <div class="collection-promo-tile__buttons">
+          {% if button_1_visible %}
+            <a class="collection-promo-tile__button" href="{{ block.settings.button_1_link }}">
+              {{- block.settings.button_1_label | escape -}}
+            </a>
+          {% endif %}
+          {% if button_2_visible %}
+            <a
+              class="collection-promo-tile__button collection-promo-tile__button--secondary"
+              href="{{ block.settings.button_2_link }}"
+            >
+              {{- block.settings.button_2_label | escape -}}
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+{% stylesheet %}
+  .collection-promo-tile {
+    display: flex;
+    flex-direction: column;
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  @media (min-width: 1000px) {
+    .collection-promo-tile {
+      grid-column: span 2;
+    }
+  }
+
+  .collection-promo-tile__media {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+
+  @media (min-width: 1000px) {
+    .collection-promo-tile__media {
+      aspect-ratio: 2 / 1;
+    }
+  }
+
+  .collection-promo-tile__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .collection-promo-tile__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem 0;
+  }
+
+  .collection-promo-tile__headline {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .collection-promo-tile__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .collection-promo-tile__button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border: 2px solid var(--color-foreground);
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .collection-promo-tile__button--secondary {
+    background-color: transparent;
+    color: var(--color-foreground);
+  }
+{% endstylesheet %}

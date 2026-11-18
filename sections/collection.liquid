@@ -7,9 +7,25 @@
 
 <h1>{{ collection.title }}</h1>
 
-<div class="collection-products">
+{% liquid
+  assign promo = null
+  for block in section.blocks
+    if block.type == 'promo_tile' and block.settings.image != blank and current_page == 1
+      assign promo = block
+      break
+    endif
+  endfor
+  assign promo_position = promo.settings.position | default: 3
+  assign promo_rendered = false
+%}
+
+<div class="collection-products{% if promo %} collection-products--has-promo{% endif %}">
   {% paginate collection.products by 20 %}
     {% for product in collection.products %}
+      {% if promo and promo_rendered == false and forloop.index == promo_position %}
+        {% render 'collection-promo-tile', block: promo %}
+        {% assign promo_rendered = true %}
+      {% endif %}
       <div class="collection-product">
         {% if product.featured_image %}
           {% render 'image',
@@ -28,6 +44,10 @@
       </div>
     {% endfor %}
 
+    {% if promo and promo_rendered == false %}
+      {% render 'collection-promo-tile', block: promo %}
+    {% endif %}
+
     {{ paginate | default_pagination }}
   {% endpaginate %}
 </div>
@@ -37,11 +57,66 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
   }
+
+  /* With 3+ columns a two-wide tile can leave a gap in its row; let cards fill it. */
+  .collection-products--has-promo {
+    grid-auto-flow: row dense;
+  }
 {% endstylesheet %}
 
 {% schema %}
 {
   "name": "t:general.collection",
-  "settings": []
+  "settings": [],
+  "max_blocks": 1,
+  "blocks": [
+    {
+      "type": "promo_tile",
+      "name": "t:general.promo_tile",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:labels.image"
+        },
+        {
+          "type": "text",
+          "id": "headline",
+          "label": "t:labels.headline"
+        },
+        {
+          "type": "text",
+          "id": "button_1_label",
+          "label": "t:labels.button_1_label"
+        },
+        {
+          "type": "url",
+          "id": "button_1_link",
+          "label": "t:labels.button_1_link"
+        },
+        {
+          "type": "text",
+          "id": "button_2_label",
+          "label": "t:labels.button_2_label"
+        },
+        {
+          "type": "url",
+          "id": "button_2_link",
+          "label": "t:labels.button_2_link"
+        },
+        {
+          "type": "range",
+          "id": "position",
+          "label": "t:labels.promo_position",
+          "info": "t:info.promo_position",
+          "min": 1,
+          "max": 12,
+          "step": 1,
+          "default": 3
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}
