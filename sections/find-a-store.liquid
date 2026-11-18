@@ -29,8 +29,8 @@ shop-location|Shop location|88 Sample Ave, Boulder, CO 80302|+1 303 555 0177|||M
   <p class="find-a-store__tz">All hours are shown in Mountain Time (Denver).</p>
 
   <ul class="find-a-store__list">
-    {%- for record in stores -%}
-      {%- assign record = record | strip -%}
+    {%- for raw_record in stores -%}
+      {%- assign record = raw_record | strip -%}
       {%- if record == blank -%}{%- continue -%}{%- endif -%}
       {%- assign f = record | split: '|' -%}
       <li
