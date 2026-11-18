@@ -19,6 +19,10 @@
     "update": "Update",
     "remove": "Remove"
   },
+  "points": {
+    "default_message": "You'll earn X points",
+    "gift_card_note": "Gift card payments don't earn points"
+  },
   "customers": {
     "login": {
       "email": "Email",

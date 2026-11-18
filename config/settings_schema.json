@@ -54,6 +54,25 @@
     ]
   },
   {
+    "name": "t:general.loyalty_points",
+    "settings": [
+      {
+        "type": "number",
+        "id": "points_per_dollar",
+        "label": "t:labels.points_per_dollar",
+        "info": "t:labels.points_per_dollar_info",
+        "default": 1
+      },
+      {
+        "type": "text",
+        "id": "points_message",
+        "label": "t:labels.points_message",
+        "info": "t:labels.points_message_info",
+        "default": "You'll earn X points"
+      }
+    ]
+  },
+  {
     "name": "t:general.colors",
     "settings": [
       {

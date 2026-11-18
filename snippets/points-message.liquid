@@ -1,0 +1,56 @@
+{% doc %}
+  Renders the "You'll earn X points" message for logged-in customers only.
+
+  Points are floor(amount x rate / 100), computed with integers (rate is
+  scaled to millionths) so the figure never suffers floating point drift.
+  The amount is in the shopper's own currency, so no conversion is applied.
+
+  @param {number} amount - Amount actually paid, in the smallest currency unit (cents)
+  @param {boolean} [gift_card_note] - Also render the "gift card payments don't earn points" line
+  @param {boolean} [is_product] - Marks the message as the product page one, so the script can update it
+
+  @example
+  {% render 'points-message', amount: cart.total_price, gift_card_note: true %}
+{% enddoc %}
+
+{% liquid
+  assign rate_micro = settings.points_per_dollar | times: 1000000 | round
+
+  if customer and rate_micro > 0
+    assign points = amount | times: rate_micro | divided_by: 100000000
+
+    assign message = settings.points_message | strip
+    unless message contains 'X'
+      assign message = 'points.default_message' | t
+    endunless
+    assign before = message | split: 'X' | first | default: ''
+    assign after = message | remove_first: before | remove_first: 'X'
+
+    assign is_hidden = false
+    if points < 1
+      assign is_hidden = true
+    endif
+  endif
+%}
+
+{%- if customer and rate_micro > 0 -%}
+  <p
+    class="points-message"
+    data-points-message
+    data-rate-micro="{{ rate_micro }}"
+    {% if is_product %}
+      data-points-product
+    {% endif %}
+    {% if is_hidden %}
+      hidden
+    {% endif %}
+  >
+    {{- before | escape -}}
+    <span data-points-value>{{ points }}</span>
+    {{- after | escape -}}
+  </p>
+
+  {%- if gift_card_note -%}
+    <p class="points-gift-card-note" data-points-gift-card-note>{{ 'points.gift_card_note' | t }}</p>
+  {%- endif -%}
+{%- endif -%}

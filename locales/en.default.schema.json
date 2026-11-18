@@ -18,6 +18,7 @@
     "group": "Group",
     "header": "Header",
     "layout": "Layout",
+    "loyalty_points": "Loyalty points",
     "main": "Main",
     "page": "Page",
     "password": "Password",
@@ -46,6 +47,10 @@
     "padding": "Padding",
     "page_margin": "Page margin",
     "page_width": "Page width",
+    "points_message": "Points message",
+    "points_message_info": "Shown to logged-in customers on product and cart pages. Write X where the number of points should appear.",
+    "points_per_dollar": "Points per dollar",
+    "points_per_dollar_info": "Points earned per dollar paid, after discounts and excluding shipping and tax. Decimals are allowed. Set to 0 to hide the message.",
     "show_payment_icons": "Show payment icons",
     "text_style": "Text style",
     "text": "Text"

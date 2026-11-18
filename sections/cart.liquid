@@ -5,29 +5,46 @@
   https://shopify.dev/docs/storefronts/themes/architecture/templates/cart
 {% endcomment %}
 
-<h1>{{ 'cart.title' | t }}</h1>
+<div
+  data-cart-root
+  data-section-id="{{ section.id }}"
+  data-cart-url="{{ routes.cart_url }}"
+  data-change-url="{{ routes.cart_change_url }}"
+>
+  <h1>{{ 'cart.title' | t }}</h1>
 
-<form action="{{ routes.cart_url }}" method="post">
-  <table>
-    {% for item in cart.items %}
-      <tr>
-        <td>
-          {% render 'image', image: item.image, url: item.url %}
-        </td>
-        <td>
-          <p>{{ item.product.title }}</p>
-          {{ 'cart.remove' | t | link_to: item.url_to_remove }}
-        </td>
-        <td>
-          <input type="text" name="updates[]" value="{{ item.quantity }}">
-          <input type="submit" value="{{ 'cart.update' | t }}">
-        </td>
-      </tr>
-    {% endfor %}
-  </table>
+  <form action="{{ routes.cart_url }}" method="post">
+    <table>
+      {% for item in cart.items %}
+        <tr>
+          <td>
+            {% render 'image', image: item.image, url: item.url %}
+          </td>
+          <td>
+            <p>{{ item.product.title }}</p>
+            <a href="{{ item.url_to_remove }}" data-cart-remove data-key="{{ item.key }}">
+              {{- 'cart.remove' | t -}}
+            </a>
+          </td>
+          <td>
+            <input type="text" name="updates[]" value="{{ item.quantity }}" data-cart-quantity data-key="{{ item.key }}">
+            <input type="submit" value="{{ 'cart.update' | t }}">
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
 
-  <input type="submit" name="checkout" value="{{ 'cart.checkout' | t }}">
-</form>
+    {% if customer and cart.item_count > 0 %}
+      {% render 'points-message', amount: cart.total_price, gift_card_note: true %}
+    {% endif %}
+
+    <input type="submit" name="checkout" value="{{ 'cart.checkout' | t }}">
+  </form>
+</div>
+
+{% if customer %}
+  <script src="{{ 'points-message.js' | asset_url }}" defer></script>
+{% endif %}
 
 {% schema %}
 {
