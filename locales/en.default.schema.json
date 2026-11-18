@@ -23,6 +23,7 @@
     "password": "Password",
     "primary": "Primary",
     "product": "Product",
+    "promo_tile": "Promo tile",
     "row": "Row",
     "search": "Search",
     "secondary": "Secondary",
@@ -36,9 +37,15 @@
   "labels": {
     "alignment": "Alignment",
     "background": "Background",
+    "button_1_label": "First button label",
+    "button_1_link": "First button link",
+    "button_2_label": "Second button label",
+    "button_2_link": "Second button link",
     "foreground": "Foreground",
     "grid_gap": "Grid spacing",
     "grid_item_width": "Grid item width",
+    "headline": "Headline",
+    "image": "Image",
     "input_corner_radius": "Input corner radius",
     "layout_direction": "Layout direction",
     "menu": "Menu",
@@ -46,9 +53,13 @@
     "padding": "Padding",
     "page_margin": "Page margin",
     "page_width": "Page width",
+    "promo_position": "Position in grid",
     "show_payment_icons": "Show payment icons",
     "text_style": "Text style",
     "text": "Text"
+  },
+  "info": {
+    "promo_position": "Shown on page 1 only. 3 places the tile after the first two products."
   },
   "options": {
     "alignment": {
