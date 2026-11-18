@@ -1,0 +1,28 @@
+{
+  "sections": {
+    "main": {
+      "type": "collection",
+      "blocks": {
+        "promo_tile": {
+          "type": "promo_tile",
+          "settings": {
+            "image": "shopify://shop_images/snowboard_sky.jpg",
+            "headline": "Winter promo",
+            "button_1_label": "Shop now",
+            "button_1_link": "/collections/all",
+            "button_2_label": "Learn more",
+            "button_2_link": "/collections",
+            "position": 3
+          }
+        }
+      },
+      "block_order": [
+        "promo_tile"
+      ],
+      "settings": {}
+    }
+  },
+  "order": [
+    "main"
+  ]
+}
