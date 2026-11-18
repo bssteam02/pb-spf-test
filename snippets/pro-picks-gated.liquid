@@ -6,14 +6,19 @@
     {% if pro_picks_gated != blank %} ... {% endif %}
 
   Membership is read from the product's collections, never from a product list.
+  The collection's handle is 'snow-pro-picks' on dev and 'pro-picks' on live.
 {% endcomment %}
 {%- unless customer -%}
-  {%- if gated_collection and gated_collection.handle == 'snow-pro-picks' -%}
+  {%- assign pro_picks_handles = 'snow-pro-picks,pro-picks' | split: ',' -%}
+  {%- if gated_collection and pro_picks_handles contains gated_collection.handle -%}
     true
   {%- elsif gated_product -%}
     {%- assign gated_handles = gated_product.collections | map: 'handle' -%}
-    {%- if gated_handles contains 'snow-pro-picks' -%}
-      true
-    {%- endif -%}
+    {%- for pro_picks_handle in pro_picks_handles -%}
+      {%- if gated_handles contains pro_picks_handle -%}
+        true
+        {%- break -%}
+      {%- endif -%}
+    {%- endfor -%}
   {%- endif -%}
 {%- endunless -%}
