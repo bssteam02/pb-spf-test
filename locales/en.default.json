@@ -17,7 +17,9 @@
     "checkout": "Checkout",
     "title": "Cart",
     "update": "Update",
-    "remove": "Remove"
+    "remove": "Remove",
+    "terms_label_html": "I have read and agree to the <a href=\"{{ url }}\" target=\"_blank\" rel=\"noopener\">Terms of service</a>.",
+    "terms_error": "Please confirm you agree to the Terms of service before checking out."
   },
   "customers": {
     "login": {
