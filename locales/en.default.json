@@ -27,6 +27,22 @@
       "title": "Login"
     }
   },
+  "collection": {
+    "empty": "There are no products in this collection.",
+    "product_count": {
+      "one": "{{ count }} product",
+      "other": "{{ count }} products"
+    },
+    "filters": {
+      "active": "Active filters:",
+      "apply": "Apply filters",
+      "clear_all": "Clear all",
+      "no_results": "No products match your filters.",
+      "price_from": "From",
+      "price_to": "To",
+      "remove": "Remove filter: {{ filter }}"
+    }
+  },
   "collections": {
     "title": "Collections"
   },
