@@ -10,6 +10,23 @@
   </div>
 
   <div class="header__icons">
+    <details class="header__search">
+      <summary aria-label="{{ 'search.label' | t }}" title="{{ 'search.label' | t }}">
+        {{ 'icon-search.svg' | inline_asset_content }}
+      </summary>
+      <form action="{{ routes.search_url }}" method="get" role="search" class="header__search-form">
+        <input
+          type="search"
+          name="q"
+          value="{{ search.terms | escape }}"
+          placeholder="{{ 'search.header_placeholder' | t }}"
+          aria-label="{{ 'search.label' | t }}"
+          autocomplete="off"
+        >
+        <button type="submit">{{ 'search.submit' | t }}</button>
+      </form>
+    </details>
+
     {% if shop.customer_accounts_enabled %}
       <shopify-account menu="{{ section.settings.customer_account_menu }}">
         {{ 'icon-account.svg' | inline_asset_content }}
@@ -28,7 +45,7 @@
 
 {% stylesheet %}
   header {
-    height: 5rem;
+    min-height: 5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -55,7 +72,59 @@
     display: flex;
     gap: 1rem;
   }
+  header .header__menu {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+  header .header__icons {
+    flex-shrink: 0;
+    align-items: center;
+  }
+  header {
+    position: relative;
+  }
+  header .header__search summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    cursor: pointer;
+    list-style: none;
+    color: var(--color-foreground);
+  }
+  header .header__search summary::-webkit-details-marker {
+    display: none;
+  }
+  header .header__search-form {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem var(--page-margin);
+    background: var(--color-background);
+  }
+  header .header__search-form input {
+    flex: 1;
+    min-width: 0;
+    min-height: 2.75rem;
+  }
+  header .header__search-form button {
+    min-height: 2.75rem;
+  }
 {% endstylesheet %}
+
+{% javascript %}
+  document.addEventListener('toggle', (event) => {
+    const details = event.target;
+    if (details.matches?.('.header__search') && details.open) {
+      details.querySelector('input[name="q"]')?.focus();
+    }
+  }, true);
+{% endjavascript %}
 
 {% schema %}
 {
