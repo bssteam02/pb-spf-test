@@ -13,6 +13,12 @@ body {
   min-height: 100svh;
 }
 
+.main-content {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+}
+
 html:has(dialog[scroll-lock][open], details[scroll-lock][open]) {
   overflow: hidden;
 }
