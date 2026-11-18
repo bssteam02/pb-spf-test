@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "main": {
+      "type": "find-a-store",
+      "settings": {}
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

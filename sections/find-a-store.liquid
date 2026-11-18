@@ -1,0 +1,401 @@
+{%- comment -%}
+  One store per line, fields split by "|": id | name | address | phone | lat | lng | weekly | exceptions.
+  weekly rows: label~days (ISO, Mon=1)~hours. exceptions rows: label~month-day~hours (match every year).
+  hours are "HH:MM-HH:MM" in 24h, or "closed". Rows are split by ";". lat/lng stay empty until the
+  verified geocoded values are filled in: the map draws only stores that have both.
+{%- endcomment -%}
+{%- capture stores_raw -%}
+denver-warehouse|Denver Warehouse|1200 Example St, Denver, CO 80202|+1 303 555 0142|||Mon – Fri~1,2,3,4,5~09:00-18:00;Sat~6~10:00-16:00;Sun~7~closed|24 Dec~12-24~09:00-14:00;25 Dec~12-25~closed;31 Dec~12-31~09:00-14:00@@
+shop-location|Shop location|88 Sample Ave, Boulder, CO 80302|+1 303 555 0177|||Mon – Fri~1,2,3,4,5~10:00-18:00;Sat~6~10:00-17:00;Sun~7~11:00-16:00|24 Dec~12-24~10:00-14:00;25 Dec~12-25~closed;31 Dec~12-31~10:00-14:00@@
+{%- endcapture -%}
+{%- assign stores = stores_raw | strip | split: '@@' -%}
+{%- assign hour_groups = 'weekly,exceptions' | split: ',' -%}
+
+<div class="find-a-store">
+  <h1 class="find-a-store__title">{{ page.title }}</h1>
+
+  {%- if page.content != blank -%}
+    <div class="find-a-store__intro">{{ page.content }}</div>
+  {%- endif -%}
+
+  <div class="find-a-store__map" data-fas-map hidden>
+    <div class="find-a-store__tiles" data-fas-tiles></div>
+    <div class="find-a-store__pins" data-fas-pins></div>
+    <p class="find-a-store__attribution">
+      &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors
+    </p>
+  </div>
+
+  <p class="find-a-store__tz">All hours are shown in Mountain Time (Denver).</p>
+
+  <ul class="find-a-store__list">
+    {%- for record in stores -%}
+      {%- assign record = record | strip -%}
+      {%- if record == blank -%}{%- continue -%}{%- endif -%}
+      {%- assign f = record | split: '|' -%}
+      <li
+        class="find-a-store__store"
+        id="store-{{ f[0] }}"
+        data-fas-store="{{ f[0] }}"
+        data-name="{{ f[1] | escape }}"
+        data-address="{{ f[2] | escape }}"
+        data-lat="{{ f[4] }}"
+        data-lng="{{ f[5] }}"
+      >
+        <h2 class="find-a-store__name">{{ f[1] }}</h2>
+        <p class="find-a-store__status" data-fas-status hidden></p>
+
+        <address class="find-a-store__address">{{ f[2] }}</address>
+        <p class="find-a-store__phone">
+          <a href="tel:{{ f[3] | remove: ' ' }}">{{ f[3] }}</a>
+        </p>
+        <p class="find-a-store__osm">
+          <a href="https://www.openstreetmap.org/search?query={{ f[2] | url_encode }}" target="_blank" rel="noopener">View on OpenStreetMap</a>
+        </p>
+
+        {%- for group in hour_groups -%}
+          {%- if group == 'weekly' -%}
+            {%- assign rows = f[6] | split: ';' -%}
+          {%- else -%}
+            {%- assign rows = f[7] | split: ';' -%}
+          {%- endif -%}
+          <h3 class="find-a-store__subheading">
+            {%- if group == 'weekly' -%}Opening hours{%- else -%}December hours{%- endif -%}
+          </h3>
+          <table class="find-a-store__hours">
+            <tbody>
+              {%- for row in rows -%}
+                {%- assign r = row | split: '~' -%}
+                <tr
+                  {% if group == 'weekly' %}data-days="{{ r[1] }}"{% else %}data-date="{{ r[1] }}"{% endif %}
+                  data-hours="{{ r[2] }}"
+                >
+                  <th scope="row">{{ r[0] }}</th>
+                  <td>
+                    {%- if r[2] == 'closed' -%}
+                      Closed
+                    {%- else -%}
+                      {%- assign times = r[2] | split: '-' -%}
+                      {%- for t in times -%}
+                        {%- assign parts = t | split: ':' -%}
+                        {%- assign hour24 = parts[0] | plus: 0 -%}
+                        {%- assign hour12 = hour24 | modulo: 12 -%}
+                        {%- if hour12 == 0 -%}{%- assign hour12 = 12 -%}{%- endif -%}
+                        {%- if hour24 >= 12 -%}{%- assign suffix = 'pm' -%}{%- else -%}{%- assign suffix = 'am' -%}{%- endif -%}
+                        {{- hour12 }}:{{ parts[1] }} {{ suffix -}}
+                        {%- unless forloop.last %} – {% endunless -%}
+                      {%- endfor -%}
+                    {%- endif -%}
+                  </td>
+                </tr>
+              {%- endfor -%}
+            </tbody>
+          </table>
+        {%- endfor -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+</div>
+
+{% stylesheet %}
+  .find-a-store {
+    padding-block: 2rem;
+  }
+  .find-a-store__title {
+    margin-block-end: 1rem;
+  }
+  .find-a-store__map {
+    position: relative;
+    overflow: hidden;
+    height: 20rem;
+    margin-block: 1.5rem 0.5rem;
+    background: #e5e3df;
+    border: 1px solid rgb(0 0 0 / 15%);
+  }
+  .find-a-store__map[hidden] {
+    display: none;
+  }
+  .find-a-store__tiles img {
+    position: absolute;
+    width: 256px;
+    height: 256px;
+    max-width: none;
+    user-select: none;
+  }
+  .find-a-store__pin {
+    position: absolute;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin: -1.75rem 0 0 -0.875rem;
+    background: #c0392b;
+    border: 2px solid #fff;
+    border-radius: 50% 50% 50% 0;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 40%);
+    transform: rotate(-45deg);
+    transform-origin: 0.875rem 1.75rem;
+  }
+  .find-a-store__pin:focus-visible {
+    outline: 3px solid #1a73e8;
+    outline-offset: 2px;
+  }
+  .find-a-store__pin-label {
+    position: absolute;
+    padding: 0.125rem 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    color: #222;
+    background: rgb(255 255 255 / 90%);
+    transform: translate(-50%, 0.25rem);
+    pointer-events: none;
+  }
+  .find-a-store__attribution {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: 0.125rem 0.375rem;
+    font-size: 0.6875rem;
+    background: rgb(255 255 255 / 80%);
+  }
+  .find-a-store__tz {
+    margin-block-end: 1.5rem;
+    font-size: 0.875rem;
+  }
+  .find-a-store__list {
+    display: grid;
+    gap: 1.5rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  .find-a-store__store {
+    padding: 1rem;
+    border: 1px solid rgb(0 0 0 / 15%);
+  }
+  .find-a-store__status {
+    display: inline-block;
+    margin-block: 0.5rem;
+    padding: 0.125rem 0.625rem;
+    font-weight: 600;
+    border-radius: 999px;
+  }
+  .find-a-store__status[hidden] {
+    display: none;
+  }
+  .find-a-store__status--open {
+    color: #0b5d1e;
+    background: #d6f2dd;
+  }
+  .find-a-store__status--closed {
+    color: #8a1c1c;
+    background: #f8dada;
+  }
+  .find-a-store__address {
+    font-style: normal;
+  }
+  .find-a-store__subheading {
+    margin-block: 1rem 0.25rem;
+    font-size: 1rem;
+  }
+  .find-a-store__hours {
+    border-collapse: collapse;
+  }
+  .find-a-store__hours th,
+  .find-a-store__hours td {
+    padding: 0.125rem 1rem 0.125rem 0;
+    text-align: start;
+    font-weight: normal;
+  }
+  .find-a-store__hours th {
+    min-width: 5.5rem;
+  }
+  @media (min-width: 750px) {
+    .find-a-store__map {
+      height: 26rem;
+    }
+    .find-a-store__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+{% endstylesheet %}
+
+<script>
+  (function () {
+    var root = document.currentScript.closest('.find-a-store') || document.querySelector('.find-a-store');
+    if (!root) return;
+
+    var TIME_ZONE = 'America/Denver';
+    var WEEKDAYS = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 };
+    var formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: TIME_ZONE,
+      weekday: 'short',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hourCycle: 'h23'
+    });
+
+    function denverNow() {
+      var p = {};
+      formatter.formatToParts(new Date()).forEach(function (part) {
+        p[part.type] = part.value;
+      });
+      return {
+        weekday: WEEKDAYS[p.weekday],
+        date: Number(p.month) + '-' + Number(p.day),
+        minutes: (Number(p.hour) % 24) * 60 + Number(p.minute)
+      };
+    }
+
+    function toMinutes(t) {
+      var bits = t.split(':');
+      return Number(bits[0]) * 60 + Number(bits[1]);
+    }
+
+    function isOpen(storeEl, now) {
+      var exception = storeEl.querySelector('tr[data-date="' + now.date + '"]');
+      var row = exception;
+      if (!row) {
+        Array.prototype.some.call(storeEl.querySelectorAll('tr[data-days]'), function (tr) {
+          if (tr.getAttribute('data-days').split(',').indexOf(String(now.weekday)) !== -1) {
+            row = tr;
+            return true;
+          }
+          return false;
+        });
+      }
+      if (!row) return false;
+      var hours = row.getAttribute('data-hours');
+      if (hours === 'closed') return false;
+      var span = hours.split('-');
+      return now.minutes >= toMinutes(span[0]) && now.minutes < toMinutes(span[1]);
+    }
+
+    var storeEls = Array.prototype.slice.call(root.querySelectorAll('[data-fas-store]'));
+
+    function updateStatus() {
+      var now = denverNow();
+      storeEls.forEach(function (storeEl) {
+        var el = storeEl.querySelector('[data-fas-status]');
+        var open = isOpen(storeEl, now);
+        el.textContent = open ? 'Open now' : 'Closed now';
+        el.className = 'find-a-store__status find-a-store__status--' + (open ? 'open' : 'closed');
+        el.hidden = false;
+      });
+    }
+
+    updateStatus();
+    setInterval(updateStatus, 60000);
+
+    var located = storeEls
+      .map(function (el) {
+        return {
+          id: el.getAttribute('data-fas-store'),
+          name: el.getAttribute('data-name'),
+          address: el.getAttribute('data-address'),
+          lat: parseFloat(el.getAttribute('data-lat')),
+          lng: parseFloat(el.getAttribute('data-lng'))
+        };
+      })
+      .filter(function (s) {
+        return isFinite(s.lat) && isFinite(s.lng);
+      });
+    var mapEl = root.querySelector('[data-fas-map]');
+    if (!located.length || !mapEl) return;
+
+    var tilesEl = mapEl.querySelector('[data-fas-tiles]');
+    var pinsEl = mapEl.querySelector('[data-fas-pins]');
+    var TILE = 256;
+
+    function project(lat, lng, zoom) {
+      var scale = Math.pow(2, zoom) * TILE;
+      var sin = Math.sin((lat * Math.PI) / 180);
+      return {
+        x: ((lng + 180) / 360) * scale,
+        y: (0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI)) * scale
+      };
+    }
+
+    function render() {
+      var width = mapEl.clientWidth;
+      var height = mapEl.clientHeight;
+      if (!width || !height) return;
+
+      var zoom = 16;
+      var box;
+      for (; zoom > 2; zoom--) {
+        var pts = located.map(function (s) { return project(s.lat, s.lng, zoom); });
+        var xs = pts.map(function (p) { return p.x; });
+        var ys = pts.map(function (p) { return p.y; });
+        box = {
+          minX: Math.min.apply(null, xs), maxX: Math.max.apply(null, xs),
+          minY: Math.min.apply(null, ys), maxY: Math.max.apply(null, ys)
+        };
+        if (box.maxX - box.minX <= width - 120 && box.maxY - box.minY <= height - 120) break;
+      }
+      if (located.length === 1) zoom = Math.min(zoom, 15);
+
+      var pixels = located.map(function (s) { return project(s.lat, s.lng, zoom); });
+      var cx = (box.minX + box.maxX) / 2;
+      var cy = (box.minY + box.maxY) / 2;
+      if (located.length === 1) {
+        cx = pixels[0].x;
+        cy = pixels[0].y;
+      }
+      var left = cx - width / 2;
+      var top = cy - height / 2;
+      var max = Math.pow(2, zoom);
+
+      tilesEl.innerHTML = '';
+      for (var ty = Math.floor(top / TILE); ty <= Math.floor((top + height) / TILE); ty++) {
+        if (ty < 0 || ty >= max) continue;
+        for (var tx = Math.floor(left / TILE); tx <= Math.floor((left + width) / TILE); tx++) {
+          var img = document.createElement('img');
+          img.alt = '';
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          img.referrerPolicy = 'strict-origin-when-cross-origin';
+          img.src = 'https://tile.openstreetmap.org/' + zoom + '/' + (((tx % max) + max) % max) + '/' + ty + '.png';
+          img.style.left = Math.round(tx * TILE - left) + 'px';
+          img.style.top = Math.round(ty * TILE - top) + 'px';
+          tilesEl.appendChild(img);
+        }
+      }
+
+      pinsEl.innerHTML = '';
+      located.forEach(function (store, i) {
+        var x = Math.round(pixels[i].x - left);
+        var y = Math.round(pixels[i].y - top);
+        var pin = document.createElement('a');
+        pin.className = 'find-a-store__pin';
+        pin.href = '#store-' + store.id;
+        pin.setAttribute('aria-label', store.name + ', ' + store.address);
+        pin.style.left = x + 'px';
+        pin.style.top = y + 'px';
+        var label = document.createElement('span');
+        label.className = 'find-a-store__pin-label';
+        label.textContent = store.name;
+        label.style.left = x + 'px';
+        label.style.top = y + 'px';
+        pinsEl.appendChild(pin);
+        pinsEl.appendChild(label);
+      });
+    }
+
+    mapEl.hidden = false;
+    render();
+    var resizeTimer;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(render, 150);
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Find a store",
+  "settings": []
+}
+{% endschema %}
