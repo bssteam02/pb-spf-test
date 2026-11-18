@@ -1,4 +1,11 @@
 {
+  "account_area": {
+    "title": "My account",
+    "log_in": "Log in",
+    "my_orders": "My orders",
+    "profile": "Profile",
+    "log_out": "Log out"
+  },
   "404": {
     "title": "404",
     "not_found": "Page not found.",

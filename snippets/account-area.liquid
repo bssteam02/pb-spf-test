@@ -1,0 +1,66 @@
+{% if shop.customer_accounts_enabled %}
+  {% liquid
+    assign profile_url = routes.account_profile_url
+    assign orders_url = routes.account_url
+
+    if profile_url != blank
+      assign orders_url = routes.account_url | append: '/orders'
+    else
+      assign profile_url = routes.account_url
+    endif
+
+    assign login_url = routes.account_login_url
+    assign return_path = request.path | url_encode
+    if login_url contains '?'
+      assign login_url = login_url | append: '&return_url=' | append: return_path
+    else
+      assign login_url = login_url | append: '?return_url=' | append: return_path
+    endif
+  %}
+
+  <section class="account-area" aria-labelledby="account-area-title">
+    <h2 class="account-area__title" id="account-area-title">{{ 'account_area.title' | t }}</h2>
+
+    <ul class="account-area__links">
+      {% if customer %}
+        <li><a href="{{ orders_url }}">{{ 'account_area.my_orders' | t }}</a></li>
+        <li><a href="{{ profile_url }}">{{ 'account_area.profile' | t }}</a></li>
+        <li><a href="{{ routes.account_logout_url }}">{{ 'account_area.log_out' | t }}</a></li>
+      {% else %}
+        <li><a href="{{ login_url }}">{{ 'account_area.log_in' | t }}</a></li>
+      {% endif %}
+    </ul>
+  </section>
+{% endif %}
+
+{% stylesheet %}
+  .account-area {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin-top: 1rem;
+    max-width: 100%;
+  }
+  .account-area__title {
+    font-size: 1rem;
+  }
+  .account-area__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .account-area__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+    text-decoration: none;
+    color: var(--color-foreground);
+    overflow-wrap: anywhere;
+  }
+{% endstylesheet %}
