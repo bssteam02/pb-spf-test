@@ -7,6 +7,11 @@
   "blog": {
     "article_comments": "Comments",
     "article_metadata_html": "{{ date }} by {{ author }}",
+    "all_topics": "All",
+    "by_author": "By {{ author }}",
+    "no_stories": "No stories found.",
+    "read_more": "Read more",
+    "topics": "Topics",
     "comment_form_body": "Comment",
     "comment_form_email": "Email",
     "comment_form_name": "Name",

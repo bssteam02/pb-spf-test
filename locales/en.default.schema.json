@@ -36,6 +36,13 @@
   "labels": {
     "alignment": "Alignment",
     "background": "Background",
+    "blog_columns_desktop": "Columns on desktop",
+    "blog_feature_newest": "Feature the newest story",
+    "blog_posts_per_page": "Stories per page",
+    "blog_show_author": "Show author",
+    "blog_show_date": "Show date",
+    "blog_show_excerpt": "Show excerpt",
+    "blog_show_topic_bar": "Show topic bar",
     "foreground": "Foreground",
     "grid_gap": "Grid spacing",
     "grid_item_width": "Grid item width",
