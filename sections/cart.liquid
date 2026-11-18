@@ -20,14 +20,52 @@
         </td>
         <td>
           <input type="text" name="updates[]" value="{{ item.quantity }}">
-          <input type="submit" value="{{ 'cart.update' | t }}">
+          <input type="submit" value="{{ 'cart.update' | t }}" formnovalidate>
         </td>
       </tr>
     {% endfor %}
   </table>
 
+  <p>
+    <input
+      type="checkbox"
+      id="cart-terms"
+      name="terms"
+      value="1"
+      autocomplete="off"
+      required
+      aria-describedby="cart-terms-error"
+    >
+    <label for="cart-terms">{{ 'cart.terms_label_html' | t: url: '/pages/terms-and-conditions' }}</label>
+    <span id="cart-terms-error" role="alert" hidden>{{ 'cart.terms_error' | t }}</span>
+  </p>
+
   <input type="submit" name="checkout" value="{{ 'cart.checkout' | t }}">
 </form>
+
+<script>
+  (function () {
+    var box = document.getElementById('cart-terms');
+    var message = document.getElementById('cart-terms-error');
+    if (!box || !message) return;
+
+    box.addEventListener('invalid', function () {
+      box.setCustomValidity(message.textContent.trim());
+      message.hidden = false;
+    });
+    box.addEventListener('change', function () {
+      box.setCustomValidity('');
+      message.hidden = true;
+    });
+    window.addEventListener('pageshow', function (event) {
+      if (event.persisted) {
+        box.checked = false;
+        box.setCustomValidity('');
+        message.hidden = true;
+      }
+    });
+  })();
+</script>
 
 {% schema %}
 {
