@@ -1,0 +1,361 @@
+{%- comment -%}
+  'Find a store' page: OpenStreetMap map, weekly hours, Dec exceptions and an
+  open-now status computed in America/Denver.
+
+  Each store is a block (data lives in templates/page.find-a-store.json).
+  Hours are "HH:MM-HH:MM" in 24-hour time, or "closed". Exceptions are
+  "MM-DD hours; MM-DD hours" and apply every year, replacing the weekly hours
+  on that date.
+{%- endcomment -%}
+
+{%- assign month_names = 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec' | split: ',' -%}
+{%- assign weekly_labels = 'Mon–Fri,Sat,Sun' | split: ',' -%}
+
+<div class="find-a-store" data-find-a-store>
+  <h1>{{ page.title }}</h1>
+
+  <div
+    class="find-a-store__map"
+    data-find-a-store-map
+    role="group"
+    aria-label="Map of our stores"
+  >
+    <p class="find-a-store__map-fallback">
+      The map needs JavaScript. Use the "View on OpenStreetMap" links below instead.
+    </p>
+  </div>
+  <p class="find-a-store__attribution">
+    <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">&copy; OpenStreetMap contributors</a>
+  </p>
+
+  <ul class="find-a-store__list">
+    {%- for block in section.blocks -%}
+      {%- assign s = block.settings -%}
+      {%- assign tel = s.phone | remove: ' ' -%}
+      {%- assign weekly_values = s.hours_mon_fri | append: '|' | append: s.hours_sat | append: '|' | append: s.hours_sun | split: '|' -%}
+      <li
+        class="find-a-store__store"
+        id="store-{{ forloop.index }}"
+        data-store
+        data-name="{{ s.name | escape }}"
+        data-lat="{{ s.latitude | escape }}"
+        data-lon="{{ s.longitude | escape }}"
+        data-hours-mon-fri="{{ s.hours_mon_fri | escape }}"
+        data-hours-sat="{{ s.hours_sat | escape }}"
+        data-hours-sun="{{ s.hours_sun | escape }}"
+        data-exceptions="{{ s.exceptions | escape }}"
+        {{ block.shopify_attributes }}
+      >
+        <h2>
+          <span class="find-a-store__number" aria-hidden="true">{{ forloop.index }}</span>
+          {{ s.name }}
+        </h2>
+
+        <p class="find-a-store__status" role="status" data-open-status></p>
+
+        <address>
+          {{ s.address_line_1 }}<br>
+          {{ s.address_line_2 }}
+        </address>
+        <p><a href="tel:{{ tel }}">{{ s.phone }}</a></p>
+        <p>
+          <a
+            href="https://www.openstreetmap.org/?mlat={{ s.latitude }}&amp;mlon={{ s.longitude }}#map=16/{{ s.latitude }}/{{ s.longitude }}"
+            target="_blank"
+            rel="noopener"
+          >View on OpenStreetMap</a>
+        </p>
+
+        <h3>Opening hours</h3>
+        <dl class="find-a-store__hours">
+          {%- for value in weekly_values -%}
+            <dt>{{ weekly_labels[forloop.index0] }}</dt>
+            <dd>
+              {%- if value == 'closed' -%}
+                Closed
+              {%- else -%}
+                {%- assign range = value | split: '-' -%}
+                {%- render 'find-a-store-time', time: range[0] %} – {% render 'find-a-store-time', time: range[1] -%}
+              {%- endif -%}
+            </dd>
+          {%- endfor -%}
+        </dl>
+
+        <h3>December hours (every year)</h3>
+        <dl class="find-a-store__hours">
+          {%- assign exception_entries = s.exceptions | split: ';' -%}
+          {%- for entry in exception_entries -%}
+            {%- assign entry_parts = entry | strip | split: ' ' -%}
+            {%- assign date_parts = entry_parts[0] | split: '-' -%}
+            {%- assign month_index = date_parts[0] | minus: 1 -%}
+            <dt>{{ date_parts[1] | plus: 0 }} {{ month_names[month_index] }}</dt>
+            <dd>
+              {%- if entry_parts[1] == 'closed' -%}
+                Closed
+              {%- else -%}
+                {%- assign range = entry_parts[1] | split: '-' -%}
+                {%- render 'find-a-store-time', time: range[0] %} – {% render 'find-a-store-time', time: range[1] -%}
+              {%- endif -%}
+            </dd>
+          {%- endfor -%}
+        </dl>
+      </li>
+    {%- endfor -%}
+  </ul>
+</div>
+
+<script>
+  (() => {
+    const root = document.querySelector('[data-find-a-store]');
+    if (!root) return;
+
+    const TIME_ZONE = 'America/Denver';
+    const TILE_SIZE = 256;
+    const WEEKLY_KEY = { Mon: 'monFri', Tue: 'monFri', Wed: 'monFri', Thu: 'monFri', Fri: 'monFri', Sat: 'sat', Sun: 'sun' };
+
+    const parseHours = (value) => (value === 'closed' ? null : value.split('-'));
+
+    const stores = [...root.querySelectorAll('[data-store]')].map((card) => ({
+      card,
+      name: card.dataset.name,
+      lat: Number(card.dataset.lat),
+      lon: Number(card.dataset.lon),
+      hours: {
+        monFri: parseHours(card.dataset.hoursMonFri),
+        sat: parseHours(card.dataset.hoursSat),
+        sun: parseHours(card.dataset.hoursSun),
+      },
+      exceptions: card.dataset.exceptions
+        .split(';')
+        .map((entry) => entry.trim().split(' '))
+        .filter((parts) => parts.length === 2)
+        .map(([date, hours]) => {
+          const [month, day] = date.split('-').map(Number);
+          return { month, day, hours: parseHours(hours) };
+        }),
+    }));
+
+    const toMinutes = (time) => {
+      const [hours, minutes] = time.split(':').map(Number);
+      return hours * 60 + minutes;
+    };
+
+    const denverNow = (date) => {
+      const parts = {};
+      new Intl.DateTimeFormat('en-US', {
+        timeZone: TIME_ZONE,
+        weekday: 'short',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hourCycle: 'h23',
+      })
+        .formatToParts(date)
+        .forEach((part) => {
+          parts[part.type] = part.value;
+        });
+      return {
+        weekday: parts.weekday,
+        month: Number(parts.month),
+        day: Number(parts.day),
+        minutes: Number(parts.hour) * 60 + Number(parts.minute),
+      };
+    };
+
+    const isOpen = (store, now) => {
+      const exception = store.exceptions.find((e) => e.month === now.month && e.day === now.day);
+      const hours = exception ? exception.hours : store.hours[WEEKLY_KEY[now.weekday]];
+      return Boolean(hours) && now.minutes >= toMinutes(hours[0]) && now.minutes < toMinutes(hours[1]);
+    };
+
+    const updateStatus = () => {
+      const now = denverNow(new Date());
+      stores.forEach((store) => {
+        const open = isOpen(store, now);
+        const status = store.card.querySelector('[data-open-status]');
+        status.textContent = open ? 'Open now' : 'Closed now';
+        status.dataset.state = open ? 'open' : 'closed';
+      });
+    };
+
+    updateStatus();
+    setInterval(updateStatus, 60000);
+
+    const mapEl = root.querySelector('[data-find-a-store-map]');
+    const worldX = (lon, zoom) => ((lon + 180) / 360) * TILE_SIZE * 2 ** zoom;
+    const worldY = (lat, zoom) => {
+      const rad = (lat * Math.PI) / 180;
+      return ((1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2) * TILE_SIZE * 2 ** zoom;
+    };
+
+    const drawMap = () => {
+      const width = mapEl.clientWidth;
+      const height = mapEl.clientHeight;
+      if (!width || !height || !stores.length) return;
+
+      let zoom = 17;
+      for (; zoom > 1; zoom -= 1) {
+        const xs = stores.map((s) => worldX(s.lon, zoom));
+        const ys = stores.map((s) => worldY(s.lat, zoom));
+        if (Math.max(...xs) - Math.min(...xs) <= width - 120 && Math.max(...ys) - Math.min(...ys) <= height - 140) break;
+      }
+
+      const xs = stores.map((s) => worldX(s.lon, zoom));
+      const ys = stores.map((s) => worldY(s.lat, zoom));
+      const originX = (Math.max(...xs) + Math.min(...xs)) / 2 - width / 2;
+      const originY = (Math.max(...ys) + Math.min(...ys)) / 2 - height / 2;
+      const tileCount = 2 ** zoom;
+      const fragment = document.createDocumentFragment();
+
+      for (let ty = Math.floor(originY / TILE_SIZE); ty <= Math.floor((originY + height) / TILE_SIZE); ty += 1) {
+        if (ty < 0 || ty >= tileCount) continue;
+        for (let tx = Math.floor(originX / TILE_SIZE); tx <= Math.floor((originX + width) / TILE_SIZE); tx += 1) {
+          const tile = document.createElement('img');
+          tile.className = 'find-a-store__tile';
+          tile.alt = '';
+          tile.width = TILE_SIZE;
+          tile.height = TILE_SIZE;
+          tile.src = `https://tile.openstreetmap.org/${zoom}/${((tx % tileCount) + tileCount) % tileCount}/${ty}.png`;
+          tile.style.left = `${tx * TILE_SIZE - originX}px`;
+          tile.style.top = `${ty * TILE_SIZE - originY}px`;
+          fragment.appendChild(tile);
+        }
+      }
+
+      stores.forEach((store, index) => {
+        const pin = document.createElement('a');
+        pin.className = 'find-a-store__pin';
+        pin.href = `#store-${index + 1}`;
+        pin.textContent = index + 1;
+        pin.setAttribute('aria-label', store.name);
+        pin.title = store.name;
+        pin.style.left = `${xs[index] - originX}px`;
+        pin.style.top = `${ys[index] - originY}px`;
+        fragment.appendChild(pin);
+      });
+
+      mapEl.replaceChildren(fragment);
+    };
+
+    drawMap();
+    new ResizeObserver(drawMap).observe(mapEl);
+  })();
+</script>
+
+{% stylesheet %}
+  .find-a-store {
+    padding-block: 2rem;
+  }
+  .find-a-store__map {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: clamp(320px, 55vw, 480px);
+    background: #e5e3df;
+  }
+  .find-a-store__map-fallback {
+    margin: 0;
+    padding: 1rem;
+  }
+  .find-a-store__tile {
+    position: absolute;
+    max-width: none;
+    width: 256px;
+    height: 256px;
+  }
+  .find-a-store__pin,
+  .find-a-store__number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: #b3261e;
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .find-a-store__pin {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.5);
+  }
+  .find-a-store__attribution {
+    margin: 0.25rem 0 0;
+    font-size: 0.75rem;
+    text-align: right;
+  }
+  .find-a-store__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    gap: 2rem;
+    margin: 2rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .find-a-store__store h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.5rem;
+  }
+  .find-a-store__status {
+    margin: 0 0 0.5rem;
+    font-weight: 700;
+  }
+  .find-a-store__status[data-state='open'] {
+    color: #1b6e2b;
+  }
+  .find-a-store__status[data-state='closed'] {
+    color: #b3261e;
+  }
+  .find-a-store__store address {
+    font-style: normal;
+  }
+  .find-a-store__hours {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.25rem 1rem;
+    margin: 0;
+  }
+  .find-a-store__hours dd {
+    margin: 0;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Find a store",
+  "blocks": [
+    {
+      "type": "store",
+      "name": "Store",
+      "settings": [
+        { "type": "text", "id": "name", "label": "Name" },
+        { "type": "text", "id": "address_line_1", "label": "Address line 1" },
+        { "type": "text", "id": "address_line_2", "label": "Address line 2" },
+        { "type": "text", "id": "phone", "label": "Phone" },
+        { "type": "text", "id": "latitude", "label": "Latitude" },
+        { "type": "text", "id": "longitude", "label": "Longitude" },
+        {
+          "type": "text",
+          "id": "hours_mon_fri",
+          "label": "Mon–Fri hours",
+          "info": "24-hour HH:MM-HH:MM, or closed"
+        },
+        { "type": "text", "id": "hours_sat", "label": "Saturday hours" },
+        { "type": "text", "id": "hours_sun", "label": "Sunday hours" },
+        {
+          "type": "text",
+          "id": "exceptions",
+          "label": "Yearly exceptions",
+          "info": "MM-DD hours, separated by semicolons. Example: 12-25 closed; 12-31 09:00-14:00"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

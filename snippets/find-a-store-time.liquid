@@ -1,0 +1,17 @@
+{%- comment -%}
+  Formats a 24-hour "HH:MM" string as "9:00 am".
+  Accepts: time (string)
+{%- endcomment -%}
+{%- liquid
+  assign time_parts = time | split: ':'
+  assign hour_24 = time_parts[0] | plus: 0
+  assign hour_12 = hour_24 | modulo: 12
+  assign meridiem = 'am'
+  if hour_24 >= 12
+    assign meridiem = 'pm'
+  endif
+  if hour_12 == 0
+    assign hour_12 = 12
+  endif
+-%}
+{{- hour_12 }}:{{ time_parts[1] }} {{ meridiem -}}

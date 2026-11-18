@@ -1,0 +1,47 @@
+{
+  "sections": {
+    "main": {
+      "type": "find-a-store",
+      "blocks": {
+        "denver_warehouse": {
+          "type": "store",
+          "settings": {
+            "name": "Denver Warehouse",
+            "address_line_1": "1200 Example St",
+            "address_line_2": "Denver, CO 80202",
+            "phone": "+1 303 555 0142",
+            "latitude": "39.7392",
+            "longitude": "-104.9903",
+            "hours_mon_fri": "09:00-18:00",
+            "hours_sat": "10:00-16:00",
+            "hours_sun": "closed",
+            "exceptions": "12-24 09:00-14:00; 12-25 closed; 12-31 09:00-14:00"
+          }
+        },
+        "shop_location": {
+          "type": "store",
+          "settings": {
+            "name": "Shop location",
+            "address_line_1": "88 Sample Ave",
+            "address_line_2": "Boulder, CO 80302",
+            "phone": "+1 303 555 0177",
+            "latitude": "40.0150",
+            "longitude": "-105.2705",
+            "hours_mon_fri": "10:00-18:00",
+            "hours_sat": "10:00-17:00",
+            "hours_sun": "11:00-16:00",
+            "exceptions": "12-24 10:00-14:00; 12-25 closed; 12-31 10:00-14:00"
+          }
+        }
+      },
+      "block_order": [
+        "denver_warehouse",
+        "shop_location"
+      ],
+      "settings": {}
+    }
+  },
+  "order": [
+    "main"
+  ]
+}
