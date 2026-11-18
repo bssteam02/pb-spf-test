@@ -43,8 +43,13 @@
 {% stylesheet %}
   .collection-products--promo {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-    grid-auto-flow: dense;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @media (min-width: 1040px) {
+    .collection-products--promo {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   .collection-promo {
@@ -97,7 +102,7 @@
     color: #000;
   }
 
-  @media (min-width: 1000px) {
+  @media (min-width: 1040px) {
     .collection-promo {
       grid-column: span 2;
       min-height: 26rem;
@@ -150,9 +155,10 @@
           "type": "range",
           "id": "position",
           "label": "Position in grid (page 1)",
+          "info": "Odd numbers only, so the tile starts a row in the two-column desktop grid.",
           "min": 1,
-          "max": 12,
-          "step": 1,
+          "max": 11,
+          "step": 2,
           "default": 3
         }
       ]
