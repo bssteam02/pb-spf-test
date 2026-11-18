@@ -21,10 +21,14 @@
       }
     {% endstyle %}
 
+    {% render 'google-tag-manager', position: 'head' %}
+
     {{ content_for_header }}
   </head>
 
   <body>
+    {% render 'google-tag-manager', position: 'body' %}
+
     <main>
       <div class="shopify-section">
         <h1>{{ gift_card.balance | money }}</h1>

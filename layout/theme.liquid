@@ -23,10 +23,14 @@
     {% # Social, title, etc. %}
     {% render 'meta-tags' %}
 
+    {% render 'google-tag-manager', position: 'head' %}
+
     {{ content_for_header }}
   </head>
 
   <body>
+    {% render 'google-tag-manager', position: 'body' %}
+
     {% sections 'header-group' %}
 
     {{ content_for_layout }}
