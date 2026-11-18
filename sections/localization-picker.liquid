@@ -1,0 +1,128 @@
+{%- assign current_country = localization.country -%}
+{%- assign current_language = localization.language -%}
+{%- assign show_languages = false -%}
+{%- if localization.available_languages.size > 1 -%}
+  {%- assign show_languages = true -%}
+{%- endif -%}
+{%- assign current_in_list = false -%}
+{%- for country in localization.available_countries -%}
+  {%- if country.iso_code == current_country.iso_code -%}
+    {%- assign current_in_list = true -%}
+  {%- endif -%}
+{%- endfor -%}
+
+<div class="localization-picker">
+  {%- form 'localization', id: 'localization-picker-form', class: 'localization-picker__form' -%}
+    <div class="localization-picker__field">
+      <label class="localization-picker__label" for="localization-picker-country">
+        {{- 'localization.country_label' | t -}}
+      </label>
+      <select
+        id="localization-picker-country"
+        class="localization-picker__select"
+        name="country_code"
+      >
+        {%- unless current_in_list -%}
+          <option value="{{ current_country.iso_code }}" selected>
+            {{- current_country.name }} ({{ current_country.currency.iso_code }} {{ current_country.currency.symbol -}})
+          </option>
+        {%- endunless -%}
+        {%- for country in localization.available_countries -%}
+          <option
+            value="{{ country.iso_code }}"
+            {% if country.iso_code == current_country.iso_code %}
+              selected
+            {% endif %}
+          >
+            {{- country.name }} ({{ country.currency.iso_code }} {{ country.currency.symbol }})
+            {{- '' -}}
+          </option>
+        {%- endfor -%}
+      </select>
+    </div>
+
+    {%- if show_languages -%}
+      <div class="localization-picker__field">
+        <label class="localization-picker__label" for="localization-picker-language">
+          {{- 'localization.language_label' | t -}}
+        </label>
+        <select
+          id="localization-picker-language"
+          class="localization-picker__select"
+          name="language_code"
+        >
+          {%- for language in localization.available_languages -%}
+            <option
+              value="{{ language.iso_code }}"
+              lang="{{ language.iso_code }}"
+              {% if language.iso_code == current_language.iso_code %}
+                selected
+              {% endif %}
+            >
+              {{- language.endonym_name | capitalize -}}
+            </option>
+          {%- endfor -%}
+        </select>
+      </div>
+    {%- endif -%}
+
+    <button type="submit" class="localization-picker__submit">
+      {{- 'localization.update' | t -}}
+    </button>
+  {%- endform -%}
+</div>
+
+{% stylesheet %}
+  .localization-picker {
+    padding-block: 1.5rem 2rem;
+  }
+  .localization-picker__form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1rem;
+  }
+  .localization-picker__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+  .localization-picker__label {
+    font-size: 0.875rem;
+  }
+  .localization-picker__select,
+  .localization-picker__submit {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid currentcolor;
+    border-radius: var(--style-border-radius-inputs);
+    color: var(--color-foreground);
+    background-color: var(--color-background);
+    max-width: 100%;
+  }
+  .localization-picker__submit {
+    cursor: pointer;
+    font: inherit;
+  }
+  .localization-picker__select:focus-visible,
+  .localization-picker__submit:focus-visible {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: 2px;
+  }
+  @media (max-width: 599px) {
+    .localization-picker__form,
+    .localization-picker__field {
+      width: 100%;
+    }
+    .localization-picker__select,
+    .localization-picker__submit {
+      width: 100%;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Country picker"
+}
+{% endschema %}
