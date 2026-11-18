@@ -1,0 +1,25 @@
+{% doc %}
+  Renders a product card for a collection grid.
+
+  @param {product} product - The product to be rendered
+
+  @example
+  {% render 'collection-product-card', product: product %}
+{% enddoc %}
+
+<div class="collection-product">
+  {% if product.featured_image %}
+    {% render 'image',
+      class: 'collection-product__image',
+      image: product.featured_image,
+      url: product.url,
+      width: 400,
+      height: 400,
+      crop: 'center'
+    %}
+  {% endif %}
+  <div class="collection-product__content">
+    <p>{{ product.title | escape | link_to: product.url }}</p>
+    <p>{{ product.price | money }}</p>
+  </div>
+</div>

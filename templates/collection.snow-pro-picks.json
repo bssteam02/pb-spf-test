@@ -1,0 +1,22 @@
+{
+  "sections": {
+    "main": {
+      "type": "collection-promo-grid",
+      "blocks": {
+        "promo": {
+          "type": "promo_tile",
+          "settings": {
+            "position": 3
+          }
+        }
+      },
+      "block_order": [
+        "promo"
+      ],
+      "settings": {}
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

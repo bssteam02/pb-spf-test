@@ -1,0 +1,37 @@
+{% doc %}
+  Renders the promo tile of a collection grid: an image with a headline and up to two buttons.
+
+  @param {object} block - The promo_tile block from the collection-promo-grid section
+
+  @example
+  {% render 'collection-promo-tile', block: promo %}
+{% enddoc %}
+
+<div class="collection-promo" {{ block.shopify_attributes }}>
+  {{
+    block.settings.image
+    | image_url: width: 1600
+    | image_tag:
+      class: 'collection-promo__image',
+      loading: 'lazy',
+      widths: '600, 900, 1200, 1600',
+      sizes: '(min-width: 1000px) 50vw, 100vw'
+  }}
+  <div class="collection-promo__content">
+    {% if block.settings.heading != blank %}
+      <h2 class="collection-promo__heading">{{ block.settings.heading | escape }}</h2>
+    {% endif %}
+    <div class="collection-promo__buttons">
+      {% if block.settings.button_1_label != blank and block.settings.button_1_link != blank %}
+        <a class="collection-promo__button collection-promo__button--primary" href="{{ block.settings.button_1_link }}">
+          {{- block.settings.button_1_label | escape -}}
+        </a>
+      {% endif %}
+      {% if block.settings.button_2_label != blank and block.settings.button_2_link != blank %}
+        <a class="collection-promo__button" href="{{ block.settings.button_2_link }}">
+          {{- block.settings.button_2_label | escape -}}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
