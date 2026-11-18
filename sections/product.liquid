@@ -41,6 +41,11 @@
   {% endform %}
 </div>
 
+{% assign gtm_variant = product.selected_or_first_available_variant %}
+<script type="application/json" data-gtm-product>
+  { "variant_id": {{ gtm_variant.id | json }}, "product": {{ product | json }} }
+</script>
+
 {% schema %}
 {
   "name": "t:general.product",
