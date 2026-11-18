@@ -3,6 +3,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 {%- liquid
+  if request.page_type == 'search' and search.performed and customer == blank
+    assign page_title = 'search.title' | t | append: ': ' | append: search.terms
+    assign page_description = nil
+  endif
+
   assign og_title = page_title | default: shop.name
   assign og_url = canonical_url | default: request.origin
   assign og_type = 'website'
@@ -87,11 +92,7 @@
 >
 
 <title>
-  {%- if request.page_type == 'search' and search.performed and customer == blank -%}
-    {{ 'search.title' | t }}: {{ search.terms | escape }}
-  {%- else -%}
-    {{ page_title }}
-  {%- endif -%}
+  {{- page_title | escape -}}
   {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%}
   {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
   {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
