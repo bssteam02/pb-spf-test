@@ -1,0 +1,48 @@
+{% comment %}
+  Price line for a product card on collection pages. Shows the compare-at price
+  crossed out and a 'SALE -X%' label when the product's lowest price is below
+  its matching compare-at price; otherwise prints the current price only.
+
+  Accepts:
+  - product: {Object} Product object
+
+  Usage:
+  {% render 'collection-product-price', product: product %}
+{% endcomment %}
+
+{%- liquid
+  assign sale_price = product.price
+  assign sale_compare_at = product.compare_at_price
+
+  if product.variants.size > 1
+    assign sale_price = nil
+    assign sale_compare_at = 0
+    for variant in product.variants
+      if sale_price == nil or variant.price < sale_price
+        assign sale_price = variant.price
+        assign sale_compare_at = variant.compare_at_price | default: 0
+      elsif variant.price == sale_price
+        assign variant_compare_at = variant.compare_at_price | default: 0
+        if variant_compare_at > sale_compare_at
+          assign sale_compare_at = variant_compare_at
+        endif
+      endif
+    endfor
+  endif
+
+  assign on_sale = false
+  if sale_compare_at > sale_price
+    assign on_sale = true
+    assign sale_percent = sale_compare_at | minus: sale_price | times: 100.0 | divided_by: sale_compare_at | round
+  endif
+-%}
+
+{%- if on_sale -%}
+  <p class="collection-product__price collection-product__price--sale">
+    <s class="collection-product__compare-at">{{ sale_compare_at | money }}</s>
+    <span class="collection-product__current">{{ sale_price | money }}</span>
+    <span class="collection-product__sale-label">SALE -{{ sale_percent }}%</span>
+  </p>
+{%- else -%}
+  <p>{{ product.price | money }}</p>
+{%- endif -%}

@@ -23,7 +23,7 @@
         {% endif %}
         <div class="collection-product__content">
           <p>{{ product.title | escape | link_to: product.url }}</p>
-          <p>{{ product.price | money }}</p>
+          {% render 'collection-product-price', product: product %}
         </div>
       </div>
     {% endfor %}
@@ -36,6 +36,20 @@
   .collection-products {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  }
+
+  .collection-product__compare-at {
+    opacity: 0.6;
+  }
+
+  .collection-product__sale-label {
+    display: inline-block;
+    padding: 0.1em 0.5em;
+    font-size: 0.8em;
+    font-weight: 700;
+    color: #fff;
+    background: #c0392b;
+    border-radius: 3px;
   }
 {% endstylesheet %}
 
