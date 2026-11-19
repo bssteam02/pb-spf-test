@@ -40,6 +40,9 @@
                   {{ result.price | money_with_currency }}
                 {% endif %}
               </p>
+              {% if result.object_type == 'product' %}
+                {% render 'coming-soon-badge', product: result %}
+              {% endif %}
             </div>
           </div>
         {% endfor %}

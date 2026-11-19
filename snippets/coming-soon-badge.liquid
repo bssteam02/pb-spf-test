@@ -1,0 +1,21 @@
+{% doc %}
+  Renders a "Coming soon" note for a sold-out product tagged `coming-soon`.
+  Renders nothing for any other product.
+
+  @param {product} product - The product to check
+
+  @example
+  {% render 'coming-soon-badge', product: product %}
+{% enddoc %}
+
+{% if product.tags contains 'coming-soon' and product.available == false %}
+  <p class="coming-soon-badge">{{ 'products.coming_soon_december' | t }}</p>
+{% endif %}
+
+{% stylesheet %}
+  .coming-soon-badge {
+    margin: 0;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+  }
+{% endstylesheet %}

@@ -42,6 +42,9 @@
     "password": "Password",
     "enter": "Enter"
   },
+  "products": {
+    "coming_soon_december": "Coming soon - December"
+  },
   "search": {
     "title": "Search",
     "placeholder": "Search articles, pages, or products",
