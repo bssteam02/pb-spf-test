@@ -1,0 +1,23 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "build-your-kit",
+      "settings": {
+        "wax_product": "selling-plans-ski-wax",
+        "gift_card_product": "gift-card"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}
