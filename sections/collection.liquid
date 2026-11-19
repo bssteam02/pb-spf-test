@@ -51,6 +51,7 @@
         <div class="collection-product__content">
           <p>{{ product.title | escape | link_to: product.url }}</p>
           {% render 'collection-product-price', product: product %}
+          {% render 'coming-soon-badge', product: product %}
         </div>
       </div>
     {% endfor %}
