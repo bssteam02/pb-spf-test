@@ -46,11 +46,31 @@
 
     <input type="text" name="quantity" min="1" value="1">
 
-    <input type="submit" value="Add to bag">
+    <input
+      type="submit"
+      id="ProductSubmit-{{ section.id }}"
+      {% if current_variant.available %}
+        value="Add to bag"
+      {% else %}
+        value="Sold out"
+        disabled
+      {% endif %}
+    >
     <p>Free returns within 30 days (QA52436).</p>
     <p>Free returns within 30 days (QA44148).</p>
-    {{ form | payment_button }}
+    <div
+      id="ProductPaymentButton-{{ section.id }}"
+      {% unless current_variant.available %}
+        hidden
+      {% endunless %}
+    >
+      {{ form | payment_button }}
+    </div>
   {% endform %}
+
+  {% for block in section.blocks %}
+    {% render block %}
+  {% endfor %}
 
   {% assign product_type_key = product.type | strip | downcase %}
   {% if product_type_key == 'snowboard' %}
@@ -68,14 +88,32 @@
     var variants = {{ product.variants | json }};
     var select = document.querySelector('.product-form select[name="id"]');
     var status = document.getElementById('ProductVariantStatus-{{ section.id }}');
+    var submit = document.getElementById('ProductSubmit-{{ section.id }}');
+    var payment = document.getElementById('ProductPaymentButton-{{ section.id }}');
     if (!select || !status) return;
 
-    select.addEventListener('change', function () {
-      var variant = variants.find(function (v) {
+    function findVariant() {
+      return variants.find(function (v) {
         return v.id === parseInt(select.value, 10);
       });
+    }
+
+    function syncBuyButtons(variant) {
+      if (submit) {
+        submit.disabled = !variant.available;
+        submit.value = variant.available ? 'Add to bag' : 'Sold out';
+      }
+      if (payment) payment.hidden = !variant.available;
+    }
+
+    var initial = findVariant();
+    if (initial) syncBuyButtons(initial);
+
+    select.addEventListener('change', function () {
+      var variant = findVariant();
       if (!variant) return;
       status.textContent = (variant.sku ? variant.sku + ' - ' : '') + (variant.available ? 'In stock' : 'Sold out');
+      syncBuyButtons(variant);
     });
   })();
 </script>
@@ -108,6 +146,11 @@
       "id": "delivery_zip_list_url",
       "label": "Covered ZIP codes file URL (optional)",
       "info": "Upload the carrier's .txt or .csv file in Settings > Files, copy its link and paste it here. ZIP codes from the file are added to the pasted list."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
     }
   ],
   "disabled_on": {
