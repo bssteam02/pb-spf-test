@@ -1,0 +1,203 @@
+{% comment %}
+  "Build your kit" page: pick a board and size, the wax, and an optional gift
+  card, see the kit saving, then add everything to the cart in one go.
+
+  Prices are rendered in cents in the shopper's presentment currency and are
+  formatted/summed in assets/build-your-kit.js.
+{% endcomment %}
+
+{%- liquid
+  assign wax_product = section.settings.wax_product
+  assign gift_card_product = section.settings.gift_card_product
+  assign wax_variant = null
+  if wax_product
+    for variant in wax_product.variants
+      if variant.title == 'Selling Plans Ski Wax'
+        assign wax_variant = variant
+        break
+      endif
+    endfor
+  endif
+  assign gift_card_titles = '$25,$50,$100' | split: ','
+-%}
+
+{{ 'build-your-kit.css' | asset_url | stylesheet_tag }}
+
+{%- paginate collections.all.products by 50 -%}
+<div
+  class="kit"
+  data-kit
+  data-currency="{{ cart.currency.iso_code }}"
+  data-locale="{{ request.locale.iso_code }}"
+  data-saving-percent="10"
+  data-cart-add-url="{{ routes.cart_add_url }}.js"
+  data-cart-url="{{ routes.cart_url }}"
+  {% if paginate.pages > 1 %}
+    data-pages="{{ paginate.pages }}"
+  {% endif %}
+>
+  <h1 class="kit__title">{{ page.title }}</h1>
+  <p class="kit__intro">{{ 'kit.intro' | t }}</p>
+
+  <form class="kit__form" data-kit-form novalidate>
+    <div class="kit__steps">
+      <fieldset class="kit__step">
+        <legend class="kit__legend">{{ 'kit.board' | t }}</legend>
+        <label class="kit__label" for="kit-board">{{ 'kit.board_label' | t }}</label>
+        <select class="kit__select" id="kit-board" data-kit-board>
+          <option value="">{{ 'kit.board_placeholder' | t }}</option>
+        </select>
+      </fieldset>
+
+      <fieldset class="kit__step" data-kit-size-step hidden>
+        <legend class="kit__legend" data-kit-size-legend>{{ 'kit.size' | t }}</legend>
+        <div class="kit__options" data-kit-sizes></div>
+      </fieldset>
+
+      <div class="kit__step">
+        <h2 class="kit__legend">{{ 'kit.wax' | t }}</h2>
+        {% if wax_variant %}
+          <p
+            class="kit__wax"
+            data-kit-wax
+            data-variant-id="{{ wax_variant.id }}"
+            data-price="{{ wax_variant.price }}"
+            data-available="{{ wax_variant.available }}"
+          >
+            <span>{{ wax_product.title }}</span>
+            <span data-kit-money="{{ wax_variant.price }}">{{ wax_variant.price | money }}</span>
+          </p>
+          {% unless wax_variant.available %}
+            <p class="kit__note">{{ 'kit.wax_sold_out' | t }}</p>
+          {% endunless %}
+        {% else %}
+          <p class="kit__note" data-kit-wax-missing>{{ 'kit.wax_unavailable' | t }}</p>
+        {% endif %}
+      </div>
+
+      <fieldset class="kit__step">
+        <legend class="kit__legend">{{ 'kit.gift_card' | t }}</legend>
+        <div class="kit__options">
+          <label class="kit__option">
+            <input type="radio" name="gift_card" value="" checked data-kit-gift data-price="0">
+            <span class="kit__option-text">{{ 'kit.no_gift_card' | t }}</span>
+          </label>
+          {% if gift_card_product %}
+            {% for variant in gift_card_product.variants %}
+              {% if gift_card_titles contains variant.title %}
+                <label class="kit__option{% unless variant.available %} is-disabled{% endunless %}">
+                  <input
+                    type="radio"
+                    name="gift_card"
+                    value="{{ variant.id }}"
+                    data-kit-gift
+                    data-price="{{ variant.price }}"
+                    {% unless variant.available %}
+                      disabled
+                    {% endunless %}
+                  >
+                  <span class="kit__option-text" data-kit-money="{{ variant.price }}">{{ variant.price | money }}</span>
+                </label>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="kit__summary" aria-live="polite">
+      <h2 class="kit__legend">{{ 'kit.summary' | t }}</h2>
+      <dl class="kit__lines">
+        <div class="kit__line">
+          <dt data-kit-board-name>{{ 'kit.summary_board' | t }}</dt>
+          <dd data-kit-board-price>&ndash;</dd>
+        </div>
+        <div class="kit__line">
+          <dt>{{ wax_product.title | default: 'Selling Plans Ski Wax' }}</dt>
+          <dd data-kit-wax-price>&ndash;</dd>
+        </div>
+        <div class="kit__line kit__line--saving">
+          <dt>{{ 'kit.saving' | t: percent: 10 }}</dt>
+          <dd data-kit-saving>&ndash;</dd>
+        </div>
+        <div class="kit__line" data-kit-gift-line hidden>
+          <dt>{{ 'kit.summary_gift_card' | t }}</dt>
+          <dd data-kit-gift-price></dd>
+        </div>
+        <div class="kit__line kit__line--total">
+          <dt>{{ 'kit.total' | t }}</dt>
+          <dd data-kit-total>&ndash;</dd>
+        </div>
+      </dl>
+      <p class="kit__note">{{ 'kit.gift_card_note' | t }}</p>
+      <p class="kit__error" role="alert" data-kit-error hidden></p>
+      <button class="kit__submit" type="submit" data-kit-submit disabled>
+        {{ 'kit.add_to_cart' | t }}
+      </button>
+    </div>
+  </form>
+
+  {% # Boards are every active product of type Snowboard, read from the "all" collection. %}
+  <script type="application/json" data-kit-boards>
+    [
+    {%- assign first_board = true -%}
+    {%- for product in collections.all.products -%}
+      {%- if product.type == 'Snowboard' -%}
+        {%- unless first_board %},{% endunless -%}
+        {%- assign first_board = false -%}
+        {
+          "handle": {{ product.handle | json }},
+          "title": {{ product.title | json }},
+          "optionNames": {{ product.options | json }},
+          "variants": [
+            {%- for variant in product.variants -%}
+              {
+                "id": {{ variant.id }},
+                "title": {{ variant.title | json }},
+                "price": {{ variant.price }},
+                "available": {{ variant.available | json }}
+              }{% unless forloop.last %},{% endunless %}
+            {%- endfor -%}
+          ]
+        }
+      {%- endif -%}
+    {%- endfor -%}
+    ]
+  </script>
+
+  <script type="application/json" data-kit-i18n>
+    {
+      "noBoardSelected": {{ 'kit.summary_board' | t | json }},
+      "soldOut": {{ 'kit.sold_out' | t | json }},
+      "boardSoldOut": {{ 'kit.board_sold_out' | t | json }},
+      "size": {{ 'kit.size' | t | json }},
+      "addToCart": {{ 'kit.add_to_cart' | t | json }},
+      "adding": {{ 'kit.adding' | t | json }},
+      "error": {{ 'kit.error' | t | json }}
+    }
+  </script>
+</div>
+{%- endpaginate -%}
+
+<script src="{{ 'build-your-kit.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Build your kit",
+  "settings": [
+    {
+      "type": "product",
+      "id": "wax_product",
+      "label": "Wax product"
+    },
+    {
+      "type": "product",
+      "id": "gift_card_product",
+      "label": "Gift card product"
+    }
+  ],
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  }
+}
+{% endschema %}
